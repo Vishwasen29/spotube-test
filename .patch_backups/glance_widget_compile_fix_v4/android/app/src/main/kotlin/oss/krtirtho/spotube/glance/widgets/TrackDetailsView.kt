@@ -32,12 +32,12 @@ fun TrackDetailsView(
     activeTrack: Track?,
     compact: Boolean = false,
     counterText: String? = null,
-    accent: ColorProvider = ColorProvider(Color(0xFFFF5A36)),
+    accent: ColorProvider = ColorProvider(day = Color(0xFFFF5A36), night = Color(0xFFFF5A36)),
 ) {
     val context = LocalContext.current
-    val artistText = activeTrack?.artists?.joinToString(", ") { it.name } ?: "Unknown artist"
+    val artistText: CharSequence = activeTrack?.artists?.joinToString(", ") { it.name } ?: "Unknown artist"
     val imgLocalPath = activeTrack?.album?.images?.firstOrNull()?.path
-    val titleText = activeTrack?.name ?: "Nothing playing"
+    val titleText: CharSequence = activeTrack?.name ?: "Nothing playing"
 
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         Row(
@@ -99,7 +99,7 @@ fun TrackDetailsView(
                     style = TextStyle(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorProvider(Color(0xFF111111)),
+                        color = Color(0xFF111111),
                     ),
                 )
             }

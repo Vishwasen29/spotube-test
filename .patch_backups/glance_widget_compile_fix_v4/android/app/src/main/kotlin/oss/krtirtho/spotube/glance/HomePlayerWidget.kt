@@ -105,7 +105,7 @@ private fun computeAccent(track: Track?): Color {
     }
 }
 
-private fun cp(color: Color): ColorProvider = ColorProvider(color)
+private fun cp(color: Color): ColorProvider = ColorProvider(day = color, night = color)
 
 class HomePlayerWidget : GlanceAppWidget() {
 
