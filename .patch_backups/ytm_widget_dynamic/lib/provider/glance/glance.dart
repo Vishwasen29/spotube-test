@@ -104,25 +104,9 @@ Future<void> _sendActiveTrack(SpotubeTrackObject? track) async {
   await _updateWidget();
 }
 
-Future<void> _sendQueueState(AudioPlayerStateLike state) async {
-  await _saveWidgetData("currentIndex", state.currentIndex < 0 ? 0 : state.currentIndex + 1);
-  await _saveWidgetData("queueLength", state.tracks.length);
-  await _saveWidgetData("isShuffled", state.shuffled);
-  await _saveWidgetData("loopMode", state.loopMode.name);
-  await _updateWidget();
-}
-
-typedef AudioPlayerStateLike = ({
-  int currentIndex,
-  List<SpotubeTrackObject> tracks,
-  bool shuffled,
-  dynamic loopMode,
-});
-
 final glanceProvider = Provider((ref) {
   final server = ref.read(serverProvider);
-  final playerState = ref.read(audioPlayerProvider);
-  final activeTrack = playerState.activeTrack;
+  final activeTrack = ref.read(audioPlayerProvider).activeTrack;
 
   server.whenData(
     (value) async {
@@ -136,12 +120,6 @@ final glanceProvider = Provider((ref) {
   );
 
   _sendActiveTrack(activeTrack);
-  _sendQueueState((
-    currentIndex: playerState.currentIndex,
-    tracks: playerState.tracks,
-    shuffled: playerState.shuffled,
-    loopMode: playerState.loopMode,
-  ));
 
   ref.listen(serverProvider, (prev, next) async {
     next.whenData(
@@ -162,18 +140,6 @@ final glanceProvider = Provider((ref) {
       try {
         if (previous?.activeTrack != next.activeTrack) {
           await _sendActiveTrack(next.activeTrack);
-        }
-
-        if (previous?.currentIndex != next.currentIndex ||
-            previous?.tracks.length != next.tracks.length ||
-            previous?.shuffled != next.shuffled ||
-            previous?.loopMode != next.loopMode) {
-          await _sendQueueState((
-            currentIndex: next.currentIndex,
-            tracks: next.tracks,
-            shuffled: next.shuffled,
-            loopMode: next.loopMode,
-          ));
         }
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
@@ -208,16 +174,6 @@ final glanceProvider = Provider((ref) {
     }),
     audioPlayer.loopModeStream.listen((loopMode) async {
       await _saveWidgetData("loopMode", loopMode.name);
-      await _updateWidget();
-    }),
-    audioPlayer.currentIndexChangedStream.listen((index) async {
-      final current = ref.read(audioPlayerProvider);
-      await _saveWidgetData("currentIndex", index < 0 ? 0 : index + 1);
-      await _saveWidgetData("queueLength", current.tracks.length);
-      await _updateWidget();
-    }),
-    audioPlayer.playlistStream.listen((playlist) async {
-      await _saveWidgetData("queueLength", playlist.medias.length);
       await _updateWidget();
     }),
   ];

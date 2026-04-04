@@ -1,12 +1,10 @@
 package oss.krtirtho.spotube.glance.widgets
 
 import android.content.SharedPreferences
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
-import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -24,6 +22,8 @@ import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+private val activeBar = ColorProvider(Color(0xFFFF3B30))
+private val inactiveBar = ColorProvider(Color(0xFF2A2A31))
 private val timerText = ColorProvider(Color(0xFFD6D6DB))
 
 fun Duration.format(): String {
@@ -54,31 +54,20 @@ private fun effectivePositionSeconds(prefs: SharedPreferences): Int {
 }
 
 @Composable
-private fun WaveBar(
-  progress: Float,
-  index: Int,
-  total: Int,
-  accent: ColorProvider,
-  inactive: ColorProvider
-) {
+private fun WaveBar(progress: Float, index: Int, total: Int) {
   val barHeights = listOf(4, 8, 6, 10, 7, 12, 5, 9, 6, 11, 4, 8, 6, 10, 7, 12, 5, 9, 6, 11)
   val activeCount = (progress * total).toInt()
   val heightDp = barHeights[index % barHeights.size].dp
-
   Box(
     modifier = GlanceModifier
       .defaultWeight()
       .height(heightDp)
-      .background(if (index < activeCount) accent else inactive)
+      .background(if (index < activeCount) activeBar else inactiveBar)
   ) {}
 }
 
 @Composable
-fun TrackProgress(
-  prefs: SharedPreferences,
-  accent: ColorProvider,
-  inactive: ColorProvider,
-) {
+fun TrackProgress(prefs: SharedPreferences) {
   val position = effectivePositionSeconds(prefs).seconds
   val duration = max(prefs.getInt("duration", 0), 1).seconds
   val progress =
@@ -90,15 +79,13 @@ fun TrackProgress(
       verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
       for (i in 0 until 20) {
-        WaveBar(progress = progress, index = i, total = 20, accent = accent, inactive = inactive)
+        WaveBar(progress = progress, index = i, total = 20)
         if (i < 19) {
           Spacer(modifier = GlanceModifier.width(3.dp))
         }
       }
     }
-
     Spacer(modifier = GlanceModifier.height(8.dp))
-
     Row(modifier = GlanceModifier.fillMaxWidth()) {
       Text(
         text = position.format(),
