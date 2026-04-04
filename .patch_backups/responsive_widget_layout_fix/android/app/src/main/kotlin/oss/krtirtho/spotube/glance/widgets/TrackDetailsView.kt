@@ -65,28 +65,28 @@ fun TrackDetailsView(
                         ),
                 contentDescription = "Album Art",
                 modifier = GlanceModifier
-                    .cornerRadius(if (compact) 12.dp else 16.dp)
-                    .size(if (compact) 48.dp else 72.dp),
+                    .cornerRadius(16.dp)
+                    .size(if (compact) 56.dp else 72.dp),
                 contentScale = ContentScale.Crop,
             )
 
-            Spacer(modifier = GlanceModifier.width(if (compact) 8.dp else 12.dp))
+            Spacer(modifier = GlanceModifier.width(12.dp))
 
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 Text(
                     text = titleText,
                     style = TextStyle(
-                        fontSize = if (compact) 13.sp else 17.sp,
+                        fontSize = if (compact) 15.sp else 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = GlanceTheme.colors.onBackground,
                     ),
-                    maxLines = 1,
+                    maxLines = if (compact) 1 else 2,
                 )
-                Spacer(modifier = GlanceModifier.size(3.dp))
+                Spacer(modifier = GlanceModifier.size(4.dp))
                 Text(
                     text = artistText,
                     style = TextStyle(
-                        fontSize = if (compact) 11.sp else 13.sp,
+                        fontSize = if (compact) 12.sp else 13.sp,
                         color = GlanceTheme.colors.onBackground,
                     ),
                     maxLines = 1,
@@ -94,7 +94,7 @@ fun TrackDetailsView(
             }
         }
 
-        if (!compact && !counterText.isNullOrBlank()) {
+        if (!counterText.isNullOrBlank()) {
             Spacer(modifier = GlanceModifier.size(6.dp))
             Row(
                 modifier = GlanceModifier
