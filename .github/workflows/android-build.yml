@@ -3,19 +3,21 @@ name: Android Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
 
 env:
-  FLUTTER_VERSION: 3.35.2
+  FLUTTER_VERSION: "3.35.2"
 
-env:
-  FLUTTER_VERSION: 3.35.2
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
 jobs:
   build-android-debug:
     runs-on: ubuntu-22.04
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,7 +26,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: '17'
+          java-version: "17"
           cache: gradle
 
       - name: Set up Flutter
@@ -34,20 +36,19 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Install Linux dependencies used by Android build
+      - name: Install Linux dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y gettext-base clang cmake ninja-build pkg-config libgtk-3-dev make python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse
+          sudo apt-get install -y             gettext-base             clang             cmake             ninja-build             pkg-config             libgtk-3-dev             make             python3-pip             python3-setuptools             patchelf             desktop-file-utils             libgdk-pixbuf2.0-dev             fakeroot             strace             fuse
 
       - name: Create dummy .env
-        run: |
-          envsubst < .env.example > .env
+        run: envsubst < .env.example > .env
         env:
-          ENABLE_UPDATE_CHECK: 1
-          LASTFM_API_KEY: xxx
-          LASTFM_API_SECRET: xxx
-          RELEASE_CHANNEL: stable
-          HIDE_DONATIONS: 0
+          ENABLE_UPDATE_CHECK: "1"
+          LASTFM_API_KEY: "xxx"
+          LASTFM_API_SECRET: "xxx"
+          RELEASE_CHANNEL: "stable"
+          HIDE_DONATIONS: "0"
 
       - name: Get Flutter packages
         run: flutter pub get
@@ -57,6 +58,8 @@ jobs:
 
       - name: Build stable debug APK with retries
         shell: bash
+        env:
+          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g"
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do
@@ -64,15 +67,17 @@ jobs:
             if flutter build apk --debug --flavor stable; then
               exit 0
             fi
+
             if [ "${attempt}" -lt 5 ]; then
-              sleep_seconds=$((attempt * 30))
-              echo "Build failed, retrying in ${sleep_seconds}s..."
-              sleep "${sleep_seconds}"
+              wait_seconds=$((attempt * 30))
+              echo "Build failed. Retrying in ${wait_seconds}s..."
+              sleep "${wait_seconds}"
               flutter clean || true
               flutter pub get
               dart run build_runner build --delete-conflicting-outputs
             fi
           done
+
           echo "Build failed after 5 attempts."
           exit 1
 
