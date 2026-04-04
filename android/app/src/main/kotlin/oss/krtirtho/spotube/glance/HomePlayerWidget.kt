@@ -3,8 +3,10 @@ package oss.krtirtho.spotube.glance
 import HomeWidgetGlanceState
 import HomeWidgetGlanceStateDefinition
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color as AndroidColor
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -14,29 +16,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
-import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
-import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.background
+import androidx.glance.appwidget.components.CircleIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -51,6 +52,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.google.gson.Gson
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
+import es.antonborri.home_widget.actionStartActivity
 import oss.krtirtho.spotube.MainActivity
 import oss.krtirtho.spotube.glance.models.Track
 import oss.krtirtho.spotube.glance.widgets.TrackDetailsView
@@ -58,13 +60,6 @@ import oss.krtirtho.spotube.glance.widgets.TrackProgress
 
 private val gson = Gson()
 private val serverAddressKey = ActionParameters.Key<String>("serverAddress")
-
-private val defaultAccent = ColorProvider(Color(0xFFFF5A36))
-private val widgetSurface = ColorProvider(Color(0xFF0B0B0F))
-private val widgetSurface2 = ColorProvider(Color(0xFF17171C))
-private val widgetText = ColorProvider(Color(0xFFFFFFFF))
-private val widgetSubText = ColorProvider(Color(0xFFB7B7BE))
-private val widgetOutline = ColorProvider(Color(0xFF2A2A31))
 
 class Breakpoints {
     companion object {
@@ -74,24 +69,13 @@ class Breakpoints {
     }
 }
 
-private data class WidgetPalette(
-    val accent: ColorProvider,
-    val accentSoft: ColorProvider,
-)
-
-private fun computePalette(track: Track?): WidgetPalette {
-    val path = track?.album?.images?.firstOrNull()?.path ?: return WidgetPalette(
-        accent = defaultAccent,
-        accentSoft = ColorProvider(Color(0xFF2A1613)),
-    )
+private fun computeAccent(track: Track?): Color {
+    val path = track?.album?.images?.firstOrNull()?.path ?: return Color(0xFFFF5A36)
 
     return try {
-        val bitmap = BitmapFactory.decodeFile(path) ?: return WidgetPalette(
-            accent = defaultAccent,
-            accentSoft = ColorProvider(Color(0xFF2A1613)),
-        )
+        val bitmap = BitmapFactory.decodeFile(path) ?: return Color(0xFFFF5A36)
+        val small = Bitmap.createScaledBitmap(bitmap, 20, 20, true)
 
-        val small = android.graphics.Bitmap.createScaledBitmap(bitmap, 20, 20, true)
         var r = 0
         var g = 0
         var b = 0
@@ -100,8 +84,7 @@ private fun computePalette(track: Track?): WidgetPalette {
         for (x in 0 until small.width) {
             for (y in 0 until small.height) {
                 val pixel = small.getPixel(x, y)
-                val alpha = AndroidColor.alpha(pixel)
-                if (alpha < 180) continue
+                if (AndroidColor.alpha(pixel) < 180) continue
 
                 val hsv = FloatArray(3)
                 AndroidColor.colorToHSV(pixel, hsv)
@@ -114,32 +97,19 @@ private fun computePalette(track: Track?): WidgetPalette {
             }
         }
 
-        if (count == 0) {
-            return WidgetPalette(
-                accent = defaultAccent,
-                accentSoft = ColorProvider(Color(0xFF2A1613)),
-            )
-        }
+        if (count == 0) return Color(0xFFFF5A36)
 
         val rr = (r / count).coerceIn(70, 255)
         val gg = (g / count).coerceIn(55, 220)
         val bb = (b / count).coerceIn(55, 220)
-
-        WidgetPalette(
-            accent = ColorProvider(Color(AndroidColor.rgb(rr, gg, bb))),
-            accentSoft = ColorProvider(
-                Color(AndroidColor.argb(255, rr / 5, gg / 5, bb / 5))
-            ),
-        )
+        Color(AndroidColor.rgb(rr, gg, bb))
     } catch (_: Throwable) {
-        WidgetPalette(
-            accent = defaultAccent,
-            accentSoft = ColorProvider(Color(0xFF2A1613)),
-        )
+        Color(0xFFFF5A36)
     }
 }
 
 class HomePlayerWidget : GlanceAppWidget() {
+
     override val sizeMode = SizeMode.Responsive(
         setOf(
             Breakpoints.SMALL_SQUARE,
@@ -161,9 +131,9 @@ class HomePlayerWidget : GlanceAppWidget() {
     @Preview(widthDp = 300, heightDp = 150)
     @Composable
     private fun GlanceContent(currentState: HomeWidgetGlanceState) {
+        val context = LocalContext.current
         val prefs = currentState.preferences
         val size = LocalSize.current
-        val context = LocalContext.current
 
         val activeTrackStr = prefs.getString("activeTrack", null)
         val isPlaying = prefs.getBoolean("isPlaying", false)
@@ -176,195 +146,173 @@ class HomePlayerWidget : GlanceAppWidget() {
         val activeTrack = activeTrackStr?.let {
             runCatching { gson.fromJson(it, Track::class.java) }.getOrNull()
         }
-        val palette = computePalette(activeTrack)
+
+        val accent = computeAccent(activeTrack)
+        val accentSoft = accent.copy(alpha = 0.18f)
         val counterText =
             if (queueLength > 0 && currentIndex > 0) "$currentIndex/$queueLength" else null
 
-        Box(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .cornerRadius(24.dp)
-                .background(widgetSurface)
-                .clickable(actionStartActivity<MainActivity>())
-                .padding(12.dp)
-        ) {
+        val playIcon = Icon.createWithResource(context, android.R.drawable.ic_media_play)
+        val pauseIcon = Icon.createWithResource(context, android.R.drawable.ic_media_pause)
+        val previousIcon = Icon.createWithResource(context, android.R.drawable.ic_media_previous)
+        val nextIcon = Icon.createWithResource(context, android.R.drawable.ic_media_next)
+        val shuffleIcon = Icon.createWithResource(context, android.R.drawable.ic_menu_rotate)
+        val repeatIcon = Icon.createWithResource(context, android.R.drawable.ic_popup_sync)
+
+        GlanceTheme {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .cornerRadius(24.dp)
-                    .background(palette.accentSoft)
-            ) {}
+                    .background(color = GlanceTheme.colors.surface.getColor(context))
+                    .clickable { actionStartActivity<MainActivity>(context) }
+            ) {
+                Box(
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        .background(color = accentSoft)
+                ) {}
 
-            Column(modifier = GlanceModifier.fillMaxSize()) {
-                TrackDetailsView(
-                    activeTrack = activeTrack,
-                    compact = size.height <= 145.dp,
-                    counterText = counterText,
-                    accent = palette.accent
-                )
+                Column(
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                ) {
+                    TrackDetailsView(
+                        activeTrack = activeTrack,
+                        compact = size.height <= 145.dp,
+                        counterText = counterText,
+                        accent = accent,
+                    )
 
-                Spacer(modifier = GlanceModifier.height(10.dp))
+                    Spacer(modifier = GlanceModifier.height(10.dp))
 
-                TrackProgress(
-                    prefs = prefs,
-                    accent = palette.accent,
-                    inactive = widgetOutline
-                )
+                    TrackProgress(
+                        prefs = prefs,
+                        accent = accent,
+                        inactive = GlanceTheme.colors.primaryContainer.getColor(context),
+                    )
 
-                Spacer(modifier = GlanceModifier.height(10.dp))
+                    Spacer(modifier = GlanceModifier.height(10.dp))
 
-                if (size.width > size.height) {
-                    Row(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Vertical.CenterVertically
-                    ) {
-                        Row {
-                            WidgetPill(
-                                label = "◀◀",
+                    if (size.width > size.height) {
+                        Row(
+                            modifier = GlanceModifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Horizontal.SpaceBetween,
+                            verticalAlignment = Alignment.Vertical.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+                                CircleIconButton(
+                                    imageProvider = ImageProvider(previousIcon),
+                                    contentDescription = "Previous",
+                                    onClick = actionRunCallback<PreviousAction>(
+                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                                    )
+                                )
+                                Spacer(modifier = GlanceModifier.width(8.dp))
+                                CircleIconButton(
+                                    imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
+                                    contentDescription = "Play/Pause",
+                                    backgroundColor = accent,
+                                    onClick = actionRunCallback<PlayPauseAction>(
+                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                                    )
+                                )
+                                Spacer(modifier = GlanceModifier.width(8.dp))
+                                CircleIconButton(
+                                    imageProvider = ImageProvider(nextIcon),
+                                    contentDescription = "Next",
+                                    onClick = actionRunCallback<NextAction>(
+                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                                    )
+                                )
+                            }
+
+                            Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+                                CircleIconButton(
+                                    imageProvider = ImageProvider(shuffleIcon),
+                                    contentDescription = "Shuffle",
+                                    backgroundColor =
+                                        if (isShuffled) accent else GlanceTheme.colors.surfaceVariant.getColor(context),
+                                    onClick = actionRunCallback<ShuffleAction>(
+                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                                    )
+                                )
+                                Spacer(modifier = GlanceModifier.width(8.dp))
+                                CircleIconButton(
+                                    imageProvider = ImageProvider(repeatIcon),
+                                    contentDescription = "Repeat",
+                                    backgroundColor =
+                                        if (loopMode != "none") accent else GlanceTheme.colors.surfaceVariant.getColor(context),
+                                    onClick = actionRunCallback<RepeatAction>(
+                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                                    )
+                                )
+                            }
+                        }
+                    } else {
+                        Row(
+                            modifier = GlanceModifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+                            verticalAlignment = Alignment.Vertical.CenterVertically
+                        ) {
+                            CircleIconButton(
+                                imageProvider = ImageProvider(previousIcon),
+                                contentDescription = "Previous",
                                 onClick = actionRunCallback<PreviousAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
-                            WidgetPill(
-                                label = if (isPlaying) "PAUSE" else "PLAY",
+                            CircleIconButton(
+                                imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
+                                contentDescription = "Play/Pause",
+                                backgroundColor = accent,
                                 onClick = actionRunCallback<PlayPauseAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                filled = true,
-                                accent = palette.accent,
+                                )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
-                            WidgetPill(
-                                label = "▶▶",
+                            CircleIconButton(
+                                imageProvider = ImageProvider(nextIcon),
+                                contentDescription = "Next",
                                 onClick = actionRunCallback<NextAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 )
                             )
                         }
 
-                        Spacer(modifier = GlanceModifier.defaultWeight())
+                        Spacer(modifier = GlanceModifier.height(8.dp))
 
-                        Row {
-                            WidgetPill(
-                                label = "SHUF",
+                        Row(
+                            modifier = GlanceModifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+                            verticalAlignment = Alignment.Vertical.CenterVertically
+                        ) {
+                            CircleIconButton(
+                                imageProvider = ImageProvider(shuffleIcon),
+                                contentDescription = "Shuffle",
+                                backgroundColor =
+                                    if (isShuffled) accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                 onClick = actionRunCallback<ShuffleAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                active = isShuffled,
-                                activeColor = palette.accentSoft,
+                                )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
-                            WidgetPill(
-                                label = when (loopMode) {
-                                    "single" -> "ONE"
-                                    "loop" -> "ALL"
-                                    else -> "REP"
-                                },
+                            CircleIconButton(
+                                imageProvider = ImageProvider(repeatIcon),
+                                contentDescription = "Repeat",
+                                backgroundColor =
+                                    if (loopMode != "none") accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                 onClick = actionRunCallback<RepeatAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                active = loopMode != "none",
-                                activeColor = palette.accentSoft,
+                                )
                             )
                         }
-                    }
-                } else {
-                    Row(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-                    ) {
-                        WidgetPill(
-                            label = "◀◀",
-                            onClick = actionRunCallback<PreviousAction>(
-                                parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                            )
-                        )
-                        Spacer(modifier = GlanceModifier.width(8.dp))
-                        WidgetPill(
-                            label = if (isPlaying) "PAUSE" else "PLAY",
-                            onClick = actionRunCallback<PlayPauseAction>(
-                                parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                            ),
-                            filled = true,
-                            accent = palette.accent,
-                        )
-                        Spacer(modifier = GlanceModifier.width(8.dp))
-                        WidgetPill(
-                            label = "▶▶",
-                            onClick = actionRunCallback<NextAction>(
-                                parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-
-                    Row(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-                    ) {
-                        WidgetPill(
-                            label = "SHUF",
-                            onClick = actionRunCallback<ShuffleAction>(
-                                parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                            ),
-                            active = isShuffled,
-                            activeColor = palette.accentSoft,
-                        )
-                        Spacer(modifier = GlanceModifier.width(8.dp))
-                        WidgetPill(
-                            label = when (loopMode) {
-                                "single" -> "ONE"
-                                "loop" -> "ALL"
-                                else -> "REP"
-                            },
-                            onClick = actionRunCallback<RepeatAction>(
-                                parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                            ),
-                            active = loopMode != "none",
-                            activeColor = palette.accentSoft,
-                        )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun WidgetPill(
-    label: String,
-    onClick: Action,
-    filled: Boolean = false,
-    active: Boolean = false,
-    accent: ColorProvider = defaultAccent,
-    activeColor: ColorProvider = widgetSurface2,
-) {
-    val background = when {
-        filled -> accent
-        active -> activeColor
-        else -> widgetSurface2
-    }
-
-    val textColor = if (filled) ColorProvider(Color(0xFF111111)) else widgetText
-
-    Box(
-        modifier = GlanceModifier
-            .cornerRadius(18.dp)
-            .background(background)
-            .clickable(onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = TextStyle(
-                color = textColor,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-            ),
-        )
     }
 }
 

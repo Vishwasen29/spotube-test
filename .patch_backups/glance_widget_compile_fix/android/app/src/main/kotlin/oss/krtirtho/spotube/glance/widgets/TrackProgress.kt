@@ -4,21 +4,27 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.background
+import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+private val timerText = ColorProvider(Color(0xFFD6D6DB))
 
 fun Duration.format(): String {
   return this.toComponents { hour, minutes, seconds, _ ->
@@ -48,32 +54,44 @@ private fun effectivePositionSeconds(prefs: SharedPreferences): Int {
 }
 
 @Composable
+private fun WaveBar(
+  progress: Float,
+  index: Int,
+  total: Int,
+  accent: ColorProvider,
+  inactive: ColorProvider
+) {
+  val barHeights = listOf(4, 8, 6, 10, 7, 12, 5, 9, 6, 11, 4, 8, 6, 10, 7, 12, 5, 9, 6, 11)
+  val activeCount = (progress * total).toInt()
+  val heightDp = barHeights[index % barHeights.size].dp
+
+  Box(
+    modifier = GlanceModifier
+      .defaultWeight()
+      .height(heightDp)
+      .background(if (index < activeCount) accent else inactive)
+  ) {}
+}
+
+@Composable
 fun TrackProgress(
   prefs: SharedPreferences,
-  accent: Color = Color(0xFFFF5A36),
-  inactive: Color = Color(0xFF31313A),
+  accent: ColorProvider,
+  inactive: ColorProvider,
 ) {
   val position = effectivePositionSeconds(prefs).seconds
   val duration = max(prefs.getInt("duration", 0), 1).seconds
   val progress =
       position.inWholeSeconds.toFloat() / max(duration.inWholeSeconds.toFloat(), 1.0f)
 
-  val barHeights = listOf(4, 8, 6, 10, 7, 12, 5, 9, 6, 11, 4, 8, 6, 10, 7, 12, 5, 9, 6, 11)
-  val activeCount = (progress * barHeights.size).toInt()
-
   Column(modifier = GlanceModifier.fillMaxWidth()) {
     Row(
       modifier = GlanceModifier.fillMaxWidth(),
       verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
-      for (i in barHeights.indices) {
-        Box(
-          modifier = GlanceModifier
-            .height(barHeights[i].dp)
-            .width(8.dp)
-            .background(color = if (i < activeCount) accent else inactive)
-        ) {}
-        if (i < barHeights.lastIndex) {
+      for (i in 0 until 20) {
+        WaveBar(progress = progress, index = i, total = 20, accent = accent, inactive = inactive)
+        if (i < 19) {
           Spacer(modifier = GlanceModifier.width(3.dp))
         }
       }
@@ -81,12 +99,24 @@ fun TrackProgress(
 
     Spacer(modifier = GlanceModifier.height(8.dp))
 
-    Row(
-      modifier = GlanceModifier.fillMaxWidth(),
-      horizontalAlignment = Alignment.Horizontal.SpaceBetween
-    ) {
-      Text(text = position.format(), style = TextStyle())
-      Text(text = duration.format(), style = TextStyle())
+    Row(modifier = GlanceModifier.fillMaxWidth()) {
+      Text(
+        text = position.format(),
+        style = TextStyle(
+          color = timerText,
+          fontWeight = FontWeight.Medium,
+          fontSize = 12.sp,
+        ),
+      )
+      Spacer(modifier = GlanceModifier.defaultWeight())
+      Text(
+        text = duration.format(),
+        style = TextStyle(
+          color = timerText,
+          fontWeight = FontWeight.Medium,
+          fontSize = 12.sp,
+        ),
+      )
     }
   }
 }
