@@ -1,0 +1,63 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  FLUTTER_VERSION: 3.35.2
+
+jobs:
+  build-android-debug:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install Linux dependencies used by Android build
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gettext-base clang cmake ninja-build pkg-config libgtk-3-dev make python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse
+
+      - name: Create dummy .env
+        run: |
+          envsubst < .env.example > .env
+        env:
+          ENABLE_UPDATE_CHECK: 1
+          LASTFM_API_KEY: xxx
+          LASTFM_API_SECRET: xxx
+          RELEASE_CHANNEL: stable
+          HIDE_DONATIONS: 0
+
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build stable debug APK
+        run: flutter build apk --debug --flavor stable
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotube-stable-debug-apk
+          path: build/app/outputs/flutter-apk/app-stable-debug.apk
+          if-no-files-found: error

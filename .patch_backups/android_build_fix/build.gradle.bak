@@ -82,7 +82,8 @@ android {
         release {
             signingConfig signingConfigs.release
         }
-        debug {            // Use the default Android debug keystore here.
+        debug {
+            signingConfig signingConfigs.release
         }
     }
 
@@ -94,19 +95,19 @@ android {
             resValue "string", "app_name_en", "Spotube Nightly"
             applicationIdSuffix ".nightly"
             versionNameSuffix "-nightly"
-            // Do not force release signing for this flavor.
+            signingConfig signingConfigs.release
         }
         dev {
             dimension "default"
             resValue "string", "app_name_en", "Spotube Dev"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            // Do not force release signing for this flavor.
+            signingConfig signingConfigs.release
         }
         stable {
             dimension "default"
             resValue "string", "app_name_en", "Spotube"
-            // Do not force release signing for this flavor.
+            signingConfig signingConfigs.release
         }
     }
 
