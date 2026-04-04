@@ -38,67 +38,69 @@ fun TrackDetailsView(
     val imgLocalPath = activeTrack?.album?.images?.firstOrNull()?.path
     val title = activeTrack?.name ?: "Nothing playing"
 
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-    ) {
-        Image(
-            provider =
-                if (imgLocalPath == null)
-                    ImageProvider(
-                        BitmapFactory.decodeResource(
-                            context.resources,
-                            android.R.drawable.ic_media_play
+    Column(modifier = GlanceModifier.fillMaxWidth()) {
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            Image(
+                provider =
+                    if (imgLocalPath == null)
+                        ImageProvider(
+                            BitmapFactory.decodeResource(
+                                context.resources,
+                                android.R.drawable.ic_media_play
+                            )
                         )
-                    )
-                else ImageProvider(BitmapFactory.decodeFile(imgLocalPath)),
-            contentDescription = "Album Art",
-            modifier = GlanceModifier
-                .cornerRadius(16.dp)
-                .size(if (compact) 56.dp else 72.dp),
-            contentScale = ContentScale.Crop,
-        )
-
-        Spacer(modifier = GlanceModifier.width(12.dp))
-
-        Column(modifier = GlanceModifier.fillMaxWidth()) {
-            Text(
-                text = title,
-                style = TextStyle(
-                    fontSize = if (compact) 15.sp else 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = GlanceTheme.colors.onBackground,
-                ),
-                maxLines = if (compact) 1 else 2,
-            )
-            Spacer(modifier = GlanceModifier.size(4.dp))
-            Text(
-                text = artistStr,
-                style = TextStyle(
-                    fontSize = if (compact) 12.sp else 13.sp,
-                    color = GlanceTheme.colors.onBackground,
-                ),
-                maxLines = 1,
+                    else ImageProvider(BitmapFactory.decodeFile(imgLocalPath)),
+                contentDescription = "Album Art",
+                modifier = GlanceModifier
+                    .cornerRadius(16.dp)
+                    .size(if (compact) 56.dp else 72.dp),
+                contentScale = ContentScale.Crop,
             )
 
-            if (!counterText.isNullOrBlank()) {
-                Spacer(modifier = GlanceModifier.size(6.dp))
-                Row(
-                    modifier = GlanceModifier
-                        .cornerRadius(999.dp)
-                        .background(color = accent)
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.Vertical.CenterVertically,
-                ) {
-                    Text(
-                        text = counterText,
-                        style = TextStyle(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = GlanceTheme.colors.onBackground,
-                        ),
-                    )
-                }
+            Spacer(modifier = GlanceModifier.width(12.dp))
+
+            Column(modifier = GlanceModifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    style = TextStyle(
+                        fontSize = if (compact) 15.sp else 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GlanceTheme.colors.onBackground,
+                    ),
+                    maxLines = if (compact) 1 else 2,
+                )
+                Spacer(modifier = GlanceModifier.size(4.dp))
+                Text(
+                    text = artistStr,
+                    style = TextStyle(
+                        fontSize = if (compact) 12.sp else 13.sp,
+                        color = GlanceTheme.colors.onBackground,
+                    ),
+                    maxLines = 1,
+                )
+            }
+        }
+
+        if (!counterText.isNullOrBlank()) {
+            Spacer(modifier = GlanceModifier.size(6.dp))
+            Row(
+                modifier = GlanceModifier
+                    .cornerRadius(999.dp)
+                    .background(color = accent)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.Vertical.CenterVertically,
+            ) {
+                Text(
+                    text = counterText ?: "",
+                    style = TextStyle(
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF111111),
+                    ),
+                )
             }
         }
     }

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -31,7 +32,6 @@ import androidx.glance.appwidget.components.CircleIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -47,6 +47,9 @@ import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.state.GlanceStateDefinition
+import androidx.glance.text.FontWeight
+import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
 import com.google.gson.Gson
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.actionStartActivity
@@ -105,8 +108,6 @@ private fun computeAccent(track: Track?): Color {
     }
 }
 
-private fun provider(color: Color): ColorProvider = ColorProvider(day = color, night = color)
-
 class HomePlayerWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Responsive(
@@ -158,16 +159,12 @@ class HomePlayerWidget : GlanceAppWidget() {
         val shuffleIcon = Icon.createWithResource(context, android.R.drawable.ic_menu_rotate)
         val repeatIcon = Icon.createWithResource(context, android.R.drawable.ic_popup_sync)
 
-        val surface = GlanceTheme.colors.surface.getColor(context)
-        val surfaceVariant = GlanceTheme.colors.surfaceVariant.getColor(context)
-        val primaryContainer = GlanceTheme.colors.primaryContainer.getColor(context)
-
         GlanceTheme {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .cornerRadius(24.dp)
-                    .background(color = surface)
+                    .background(color = GlanceTheme.colors.surface.getColor(context))
                     .clickable { actionStartActivity<MainActivity>(context) }
             ) {
                 Box(
@@ -193,7 +190,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                     TrackProgress(
                         prefs = prefs,
                         accent = accent,
-                        inactive = primaryContainer,
+                        inactive = GlanceTheme.colors.primaryContainer.getColor(context),
                     )
 
                     Spacer(modifier = GlanceModifier.height(10.dp))
@@ -201,6 +198,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                     if (size.width > size.height) {
                         Row(
                             modifier = GlanceModifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Horizontal.SpaceBetween,
                             verticalAlignment = Alignment.Vertical.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
@@ -209,18 +207,16 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     contentDescription = "Previous",
                                     onClick = actionRunCallback<PreviousAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    backgroundColor = provider(surfaceVariant),
+                                    )
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
                                     imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
                                     contentDescription = "Play/Pause",
+                                    backgroundColor = accent,
                                     onClick = actionRunCallback<PlayPauseAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    backgroundColor = provider(accent),
-                                    contentColor = provider(Color(0xFF111111)),
+                                    )
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
@@ -228,32 +224,29 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     contentDescription = "Next",
                                     onClick = actionRunCallback<NextAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    backgroundColor = provider(surfaceVariant),
+                                    )
                                 )
                             }
-
-                            Spacer(modifier = GlanceModifier.width(10.dp))
 
                             Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
                                 CircleIconButton(
                                     imageProvider = ImageProvider(shuffleIcon),
                                     contentDescription = "Shuffle",
+                                    backgroundColor =
+                                        if (isShuffled) accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                     onClick = actionRunCallback<ShuffleAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    backgroundColor = provider(if (isShuffled) accent else surfaceVariant),
-                                    contentColor = provider(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                    )
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
                                     imageProvider = ImageProvider(repeatIcon),
                                     contentDescription = "Repeat",
+                                    backgroundColor =
+                                        if (loopMode != "none") accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                     onClick = actionRunCallback<RepeatAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    backgroundColor = provider(if (loopMode != "none") accent else surfaceVariant),
-                                    contentColor = provider(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                    )
                                 )
                             }
                         }
@@ -268,18 +261,16 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 contentDescription = "Previous",
                                 onClick = actionRunCallback<PreviousAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                backgroundColor = provider(surfaceVariant),
+                                )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
                                 imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
                                 contentDescription = "Play/Pause",
+                                backgroundColor = accent,
                                 onClick = actionRunCallback<PlayPauseAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                backgroundColor = provider(accent),
-                                contentColor = provider(Color(0xFF111111)),
+                                )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
@@ -287,8 +278,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 contentDescription = "Next",
                                 onClick = actionRunCallback<NextAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                backgroundColor = provider(surfaceVariant),
+                                )
                             )
                         }
 
@@ -302,21 +292,21 @@ class HomePlayerWidget : GlanceAppWidget() {
                             CircleIconButton(
                                 imageProvider = ImageProvider(shuffleIcon),
                                 contentDescription = "Shuffle",
+                                backgroundColor =
+                                    if (isShuffled) accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                 onClick = actionRunCallback<ShuffleAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                backgroundColor = provider(if (isShuffled) accent else surfaceVariant),
-                                contentColor = provider(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                )
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
                                 imageProvider = ImageProvider(repeatIcon),
                                 contentDescription = "Repeat",
+                                backgroundColor =
+                                    if (loopMode != "none") accent else GlanceTheme.colors.surfaceVariant.getColor(context),
                                 onClick = actionRunCallback<RepeatAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                backgroundColor = provider(if (loopMode != "none") accent else surfaceVariant),
-                                contentColor = provider(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                )
                             )
                         }
                     }

@@ -83,11 +83,10 @@ fun TrackProgress(
 
     Row(
       modifier = GlanceModifier.fillMaxWidth(),
-      verticalAlignment = Alignment.Vertical.CenterVertically
+      horizontalAlignment = Alignment.Horizontal.SpaceBetween
     ) {
       Text(text = position.format(), style = TextStyle())
-      Spacer(modifier = GlanceModifier.width(8.dp))
-      Text(text = "/ ${duration.format()}", style = TextStyle())
+      Text(text = duration.format(), style = TextStyle())
     }
   }
 }
