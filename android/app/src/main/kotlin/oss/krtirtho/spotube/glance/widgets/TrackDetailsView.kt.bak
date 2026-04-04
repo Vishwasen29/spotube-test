@@ -35,15 +35,9 @@ fun TrackDetailsView(
     accent: ColorProvider = ColorProvider(Color(0xFFFF5A36)),
 ) {
     val context = LocalContext.current
-
-    val artistText: String = activeTrack?.artists
-        ?.mapNotNull { it.name }
-        ?.joinToString(", ")
-        ?.ifBlank { "Unknown artist" }
-        ?: "Unknown artist"
-
-    val imgLocalPath: String? = activeTrack?.album?.images?.firstOrNull()?.path
-    val titleText: String = activeTrack?.name ?: "Nothing playing"
+    val artistText = activeTrack?.artists?.joinToString(", ") { it.name } ?: "Unknown artist"
+    val imgLocalPath = activeTrack?.album?.images?.firstOrNull()?.path
+    val titleText = activeTrack?.name ?: "Nothing playing"
 
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         Row(
@@ -52,17 +46,14 @@ fun TrackDetailsView(
         ) {
             Image(
                 provider =
-                    if (imgLocalPath.isNullOrBlank())
+                    if (imgLocalPath == null)
                         ImageProvider(
                             BitmapFactory.decodeResource(
                                 context.resources,
                                 android.R.drawable.ic_media_play
                             )
                         )
-                    else
-                        ImageProvider(
-                            BitmapFactory.decodeFile(imgLocalPath!!)
-                        ),
+                    else ImageProvider(BitmapFactory.decodeFile(imgLocalPath)),
                 contentDescription = "Album Art",
                 modifier = GlanceModifier
                     .cornerRadius(16.dp)
@@ -104,7 +95,7 @@ fun TrackDetailsView(
                 verticalAlignment = Alignment.Vertical.CenterVertically,
             ) {
                 Text(
-                    text = counterText,
+                    text = counterText ?: "",
                     style = TextStyle(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
