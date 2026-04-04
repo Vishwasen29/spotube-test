@@ -24,7 +24,6 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import oss.krtirtho.spotube.glance.models.Track
 
 @Composable
@@ -32,12 +31,12 @@ fun TrackDetailsView(
     activeTrack: Track?,
     compact: Boolean = false,
     counterText: String? = null,
-    accent: ColorProvider = ColorProvider(day = Color(0xFFFF5A36), night = Color(0xFFFF5A36)),
+    accent: Color = Color(0xFFFF5A36),
 ) {
     val context = LocalContext.current
-    val artistText: CharSequence = activeTrack?.artists?.joinToString(", ") { it.name } ?: "Unknown artist"
+    val artistStr = activeTrack?.artists?.joinToString(", ") { it.name } ?: "Unknown artist"
     val imgLocalPath = activeTrack?.album?.images?.firstOrNull()?.path
-    val titleText: CharSequence = activeTrack?.name ?: "Nothing playing"
+    val title = activeTrack?.name ?: "Nothing playing"
 
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         Row(
@@ -65,7 +64,7 @@ fun TrackDetailsView(
 
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 Text(
-                    text = titleText,
+                    text = title,
                     style = TextStyle(
                         fontSize = if (compact) 15.sp else 17.sp,
                         fontWeight = FontWeight.Bold,
@@ -75,7 +74,7 @@ fun TrackDetailsView(
                 )
                 Spacer(modifier = GlanceModifier.size(4.dp))
                 Text(
-                    text = artistText,
+                    text = artistStr,
                     style = TextStyle(
                         fontSize = if (compact) 12.sp else 13.sp,
                         color = GlanceTheme.colors.onBackground,
@@ -90,7 +89,7 @@ fun TrackDetailsView(
             Row(
                 modifier = GlanceModifier
                     .cornerRadius(999.dp)
-                    .background(colorProvider = accent)
+                    .background(color = accent)
                     .padding(horizontal = 10.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.Vertical.CenterVertically,
             ) {

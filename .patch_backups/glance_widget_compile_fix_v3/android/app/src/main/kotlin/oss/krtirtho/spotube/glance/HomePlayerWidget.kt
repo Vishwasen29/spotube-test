@@ -31,6 +31,7 @@ import androidx.glance.appwidget.components.CircleIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -46,7 +47,6 @@ import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.state.GlanceStateDefinition
-import androidx.glance.unit.ColorProvider
 import com.google.gson.Gson
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.actionStartActivity
@@ -105,7 +105,7 @@ private fun computeAccent(track: Track?): Color {
     }
 }
 
-private fun cp(color: Color): ColorProvider = ColorProvider(day = color, night = color)
+private fun provider(color: Color): ColorProvider = ColorProvider(day = color, night = color)
 
 class HomePlayerWidget : GlanceAppWidget() {
 
@@ -185,7 +185,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                         activeTrack = activeTrack,
                         compact = size.height <= 145.dp,
                         counterText = counterText,
-                        accent = cp(accent),
+                        accent = accent,
                     )
 
                     Spacer(modifier = GlanceModifier.height(10.dp))
@@ -210,7 +210,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     onClick = actionRunCallback<PreviousAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                     ),
-                                    backgroundColor = cp(surfaceVariant),
+                                    backgroundColor = provider(surfaceVariant),
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
@@ -219,8 +219,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     onClick = actionRunCallback<PlayPauseAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                     ),
-                                    backgroundColor = cp(accent),
-                                    contentColor = cp(Color(0xFF111111)),
+                                    backgroundColor = provider(accent),
+                                    contentColor = provider(Color(0xFF111111)),
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
@@ -229,7 +229,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     onClick = actionRunCallback<NextAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                     ),
-                                    backgroundColor = cp(surfaceVariant),
+                                    backgroundColor = provider(surfaceVariant),
                                 )
                             }
 
@@ -242,8 +242,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     onClick = actionRunCallback<ShuffleAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                     ),
-                                    backgroundColor = cp(if (isShuffled) accent else surfaceVariant),
-                                    contentColor = cp(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                    backgroundColor = provider(if (isShuffled) accent else surfaceVariant),
+                                    contentColor = provider(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
                                 )
                                 Spacer(modifier = GlanceModifier.width(8.dp))
                                 CircleIconButton(
@@ -252,8 +252,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                     onClick = actionRunCallback<RepeatAction>(
                                         parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                     ),
-                                    backgroundColor = cp(if (loopMode != "none") accent else surfaceVariant),
-                                    contentColor = cp(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                    backgroundColor = provider(if (loopMode != "none") accent else surfaceVariant),
+                                    contentColor = provider(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
                                 )
                             }
                         }
@@ -269,7 +269,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 onClick = actionRunCallback<PreviousAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 ),
-                                backgroundColor = cp(surfaceVariant),
+                                backgroundColor = provider(surfaceVariant),
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
@@ -278,8 +278,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 onClick = actionRunCallback<PlayPauseAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 ),
-                                backgroundColor = cp(accent),
-                                contentColor = cp(Color(0xFF111111)),
+                                backgroundColor = provider(accent),
+                                contentColor = provider(Color(0xFF111111)),
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
@@ -288,7 +288,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 onClick = actionRunCallback<NextAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 ),
-                                backgroundColor = cp(surfaceVariant),
+                                backgroundColor = provider(surfaceVariant),
                             )
                         }
 
@@ -305,8 +305,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 onClick = actionRunCallback<ShuffleAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 ),
-                                backgroundColor = cp(if (isShuffled) accent else surfaceVariant),
-                                contentColor = cp(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                backgroundColor = provider(if (isShuffled) accent else surfaceVariant),
+                                contentColor = provider(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
                             )
                             Spacer(modifier = GlanceModifier.width(8.dp))
                             CircleIconButton(
@@ -315,8 +315,8 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 onClick = actionRunCallback<RepeatAction>(
                                     parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                                 ),
-                                backgroundColor = cp(if (loopMode != "none") accent else surfaceVariant),
-                                contentColor = cp(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
+                                backgroundColor = provider(if (loopMode != "none") accent else surfaceVariant),
+                                contentColor = provider(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
                             )
                         }
                     }
