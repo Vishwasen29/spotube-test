@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
@@ -41,42 +40,32 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     try {
       isLoading.value = true;
 
-      if (isActive) {
-        await audioPlayer.setShuffle(!playlist.shuffled);
-        return;
-      }
-
       final initialTracks = options.tracks;
       if (!context.mounted) return;
 
       final isRemoteDevice = await showSelectDeviceDialog(context, ref);
       if (isRemoteDevice == null) return;
-
-      final allTracks = await options.pagination.onFetchAll();
-      final playableTracks = allTracks.isNotEmpty ? allTracks : initialTracks;
-      if (playableTracks.isEmpty) return;
-
       if (isRemoteDevice) {
+        final allTracks = await options.pagination.onFetchAll();
         final remotePlayback = ref.read(connectProvider.notifier);
         await remotePlayback.load(
           options.collection is SpotubeSimpleAlbumObject
               ? WebSocketLoadEventData.album(
-                  tracks: playableTracks,
+                  tracks: allTracks,
                   collection: options.collection as SpotubeSimpleAlbumObject,
-                  initialIndex: Random().nextInt(playableTracks.length),
-                )
+                  initialIndex: Random().nextInt(allTracks.length))
               : WebSocketLoadEventData.playlist(
-                  tracks: playableTracks,
+                  tracks: allTracks,
                   collection: options.collection as SpotubeSimplePlaylistObject,
-                  initialIndex: Random().nextInt(playableTracks.length),
+                  initialIndex: Random().nextInt(allTracks.length),
                 ),
         );
         await remotePlayback.setShuffle(true);
       } else {
         await playlistNotifier.load(
-          playableTracks,
+          initialTracks,
           autoPlay: true,
-          initialIndex: Random().nextInt(playableTracks.length),
+          initialIndex: Random().nextInt(initialTracks.length),
         );
         await audioPlayer.setShuffle(true);
         playlistNotifier.addCollection(options.collectionId);
@@ -85,9 +74,14 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
               .addAlbums([options.collection as SpotubeSimpleAlbumObject]);
         } else {
           historyNotifier.addPlaylists(
-            [options.collection as SpotubeSimplePlaylistObject],
-          );
+              [options.collection as SpotubeSimplePlaylistObject]);
         }
+
+        final allTracks = await options.pagination.onFetchAll();
+
+        await playlistNotifier.addTracks(
+          allTracks.sublist(initialTracks.length),
+        );
       }
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
@@ -95,46 +89,37 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     } finally {
       isLoading.value = false;
     }
-  }, [options, playlistNotifier, historyNotifier, playlist.shuffled, isActive]);
+  }, [options, playlistNotifier, historyNotifier]);
 
   final onPlay = useCallback(() async {
     try {
       isLoading.value = true;
 
-      if (isActive) {
-        if (audioPlayer.isPlaying) {
-          await audioPlayer.pause();
-        } else {
-          await audioPlayer.resume();
-        }
-        return;
-      }
-
       final initialTracks = options.tracks;
+
       if (!context.mounted) return;
 
       final isRemoteDevice = await showSelectDeviceDialog(context, ref);
       if (isRemoteDevice == null) return;
-
-      final allTracks = await options.pagination.onFetchAll();
-      final playableTracks = allTracks.isNotEmpty ? allTracks : initialTracks;
-      if (playableTracks.isEmpty) return;
-
       if (isRemoteDevice) {
+        final allTracks = await options.pagination.onFetchAll();
+
         final remotePlayback = ref.read(connectProvider.notifier);
         await remotePlayback.load(
           options.collection is SpotubeSimpleAlbumObject
               ? WebSocketLoadEventData.album(
-                  tracks: playableTracks,
+                  tracks: allTracks,
                   collection: options.collection as SpotubeSimpleAlbumObject,
                 )
               : WebSocketLoadEventData.playlist(
-                  tracks: playableTracks,
+                  tracks: allTracks,
                   collection: options.collection as SpotubeSimplePlaylistObject,
                 ),
         );
       } else {
-        await playlistNotifier.load(playableTracks, autoPlay: true);
+        if (initialTracks.isEmpty) return;
+
+        await playlistNotifier.load(initialTracks, autoPlay: true);
         playlistNotifier.addCollection(options.collectionId);
 
         if (options.collection is SpotubeSimpleAlbumObject) {
@@ -146,6 +131,12 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
             [options.collection as SpotubeSimplePlaylistObject],
           );
         }
+
+        final allTracks = await options.pagination.onFetchAll();
+
+        await playlistNotifier.addTracks(
+          allTracks.sublist(initialTracks.length),
+        );
       }
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
@@ -155,28 +146,21 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         isLoading.value = false;
       }
     }
-  }, [options, playlistNotifier, historyNotifier, isActive]);
+  }, [options, playlistNotifier, historyNotifier]);
 
   final onAddToQueue = useCallback(() {
-    unawaited(() async {
-      final allTracks = await options.pagination.onFetchAll();
-      final tracks = allTracks.isNotEmpty ? allTracks : options.tracks;
-      if (tracks.isEmpty) return;
-
-      playlistNotifier.addTracks(tracks);
-      playlistNotifier.addCollection(options.collectionId);
-
-      if (options.collection is SpotubeSimpleAlbumObject) {
-        historyNotifier
-            .addAlbums([options.collection as SpotubeSimpleAlbumObject]);
-      } else {
-        historyNotifier
-            .addPlaylists([options.collection as SpotubeSimplePlaylistObject]);
-      }
-
-      if (!context.mounted) return;
-      showToastForAction(context, "add-to-queue", tracks.length);
-    }());
+    final tracks = options.tracks;
+    playlistNotifier.addTracks(tracks);
+    playlistNotifier.addCollection(options.collectionId);
+    if (options.collection is SpotubeSimpleAlbumObject) {
+      historyNotifier
+          .addAlbums([options.collection as SpotubeSimpleAlbumObject]);
+    } else {
+      historyNotifier
+          .addPlaylists([options.collection as SpotubeSimplePlaylistObject]);
+    }
+    if (!context.mounted) return;
+    showToastForAction(context, "add-to-queue", tracks.length);
   }, [options, playlistNotifier, historyNotifier]);
 
   return (

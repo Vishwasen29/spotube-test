@@ -47,7 +47,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                         CircularProgressIndicator(onSurface: false, size: 20),
                   )
                 : const Icon(SpotubeIcons.shuffle),
-            enabled: !isLoading,
+            enabled: !isLoading && !isActive,
             onPressed: onShuffle,
           ),
         ),
@@ -58,14 +58,14 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             ).call,
             child: IconButton.secondary(
               icon: const Icon(SpotubeIcons.queueAdd),
-              enabled: !isLoading,
+              enabled: !isLoading && !isActive,
               onPressed: onAddToQueue,
             ),
           )
         else
           Button.secondary(
             leading: const Icon(SpotubeIcons.add),
-            enabled: !isLoading,
+            enabled: !isLoading && !isActive,
             onPressed: onAddToQueue,
             child: Text(context.l10n.queue),
           ),
@@ -79,7 +79,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             _ => const Icon(SpotubeIcons.play),
           },
           onPressed: onPlay,
-          enabled: !isLoading,
+          enabled: !isLoading && !isActive,
           child: isActive ? Text(context.l10n.pause) : Text(context.l10n.play),
         ),
       ],

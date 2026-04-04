@@ -18,8 +18,6 @@ final serverRouterProvider = Provider((ref) {
   router.get("/playback/toggle-playback", playbackRoutes.togglePlayback);
   router.get("/playback/previous", playbackRoutes.previousTrack);
   router.get("/playback/next", playbackRoutes.nextTrack);
-  router.get("/playback/toggle-shuffle", playbackRoutes.toggleShuffle);
-  router.get("/playback/cycle-loop", playbackRoutes.cycleLoop);
 
   router.all("/ws", connectRoutes.websocket);
 

@@ -41,6 +41,7 @@ Future<void> glanceBackgroundCallback(Uri? data) async {
 Future<bool?> _saveWidgetData<T>(String key, T? value) async {
   try {
     if (!kIsMobile) return null;
+
     return await HomeWidget.saveWidgetData<T>(key, value);
   } catch (e, stack) {
     AppLogger.reportError(e, stack);
@@ -85,7 +86,6 @@ Future<void> _sendActiveTrack(SpotubeTrackObject? track) async {
       : image.url.startsWith("http")
           ? (await DefaultCacheManager().getSingleFile(image.url)).path
           : image.url;
-
   final data = {
     ...jsonTrack,
     "album": {
@@ -101,6 +101,7 @@ Future<void> _sendActiveTrack(SpotubeTrackObject? track) async {
   };
 
   await _saveWidgetData("activeTrack", jsonEncode(data));
+
   await _updateWidget();
 }
 
@@ -111,6 +112,7 @@ final glanceProvider = Provider((ref) {
   server.whenData(
     (value) async {
       final (:server, :port) = value;
+
       await _saveWidgetData(
         "playbackServerAddress",
         "${server.address.host}:$port",
@@ -125,6 +127,7 @@ final glanceProvider = Provider((ref) {
     next.whenData(
       (value) async {
         final (:server, :port) = value;
+
         await _saveWidgetData(
           "playbackServerAddress",
           "${server.address.host}:$port",
@@ -138,7 +141,8 @@ final glanceProvider = Provider((ref) {
     audioPlayerProvider,
     (previous, next) async {
       try {
-        if (previous?.activeTrack != next.activeTrack) {
+        if (previous?.activeTrack != next.activeTrack &&
+            next.activeTrack != null) {
           await _sendActiveTrack(next.activeTrack);
         }
       } catch (e, stack) {
@@ -150,30 +154,14 @@ final glanceProvider = Provider((ref) {
   final subscriptions = [
     audioPlayer.playingStream.listen((playing) async {
       await _saveWidgetData("isPlaying", playing);
-      await _saveWidgetData(
-        "positionTimestampMs",
-        DateTime.now().millisecondsSinceEpoch,
-      );
       await _updateWidget();
     }),
     audioPlayer.positionStream.listen((position) async {
       await _saveWidgetData("position", position.inSeconds);
-      await _saveWidgetData(
-        "positionTimestampMs",
-        DateTime.now().millisecondsSinceEpoch,
-      );
       await _updateWidget();
     }),
     audioPlayer.durationStream.listen((duration) async {
       await _saveWidgetData("duration", duration.inSeconds);
-      await _updateWidget();
-    }),
-    audioPlayer.shuffledStream.listen((shuffled) async {
-      await _saveWidgetData("isShuffled", shuffled);
-      await _updateWidget();
-    }),
-    audioPlayer.loopModeStream.listen((loopMode) async {
-      await _saveWidgetData("loopMode", loopMode.name);
       await _updateWidget();
     }),
   ];

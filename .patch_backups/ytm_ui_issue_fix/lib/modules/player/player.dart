@@ -44,7 +44,6 @@ class PlayerView extends HookConsumerWidget {
     final isLocalTrack = currentActiveTrack is SpotubeLocalTrackObject;
     final mediaQuery = MediaQuery.sizeOf(context);
     final qualityLabel = ref.watch(audioSourceQualityLabelProvider);
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     final shouldHide = useState(true);
 
@@ -65,7 +64,7 @@ class PlayerView extends HookConsumerWidget {
       return null;
     }, [mediaQuery.lgAndUp]);
 
-    final albumArt = useMemoized(
+    String albumArt = useMemoized(
       () => (currentActiveTrack?.album.images).asUrlString(
         placeholder: ImagePlaceholder.albumArt,
       ),
@@ -134,14 +133,13 @@ class PlayerView extends HookConsumerWidget {
                               ? null
                               : () {
                                   showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return TrackDetailsDialog(
-                                        track: currentActiveTrack
-                                            as SpotubeFullTrackObject,
-                                      );
-                                    },
-                                  );
+                                      context: context,
+                                      builder: (context) {
+                                        return TrackDetailsDialog(
+                                          track: currentActiveTrack
+                                              as SpotubeFullTrackObject,
+                                        );
+                                      });
                                 },
                         ),
                       )
@@ -149,12 +147,10 @@ class PlayerView extends HookConsumerWidget {
                 ),
               ),
             ],
-            child: SafeArea(
-              top: false,
-              bottom: true,
-              child: SingleChildScrollView(
-                controller: scrollController,
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 24 + bottomInset),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 child: Column(
                   children: [
                     Container(
@@ -181,7 +177,7 @@ class PlayerView extends HookConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       alignment: Alignment.centerLeft,
@@ -228,12 +224,12 @@ class PlayerView extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     const PlayerControls(),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
                     const PlayerActions(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       showQueue: false,
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -275,22 +271,19 @@ class PlayerView extends HookConsumerWidget {
                       }),
                     ),
                     const Gap(18),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: OutlineBadge(
-                        style: const ButtonStyle.outline(
-                          size: ButtonSize.normal,
-                          density: ButtonDensity.dense,
-                          shape: ButtonShape.rectangle,
-                        ).copyWith(
-                          textStyle: (context, states, value) {
-                            return value.copyWith(fontWeight: FontWeight.w600);
-                          },
-                        ),
-                        leading: const Icon(SpotubeIcons.lightningOutlined),
-                        child: Text(qualityLabel),
+                    OutlineBadge(
+                      style: const ButtonStyle.outline(
+                        size: ButtonSize.normal,
+                        density: ButtonDensity.dense,
+                        shape: ButtonShape.rectangle,
+                      ).copyWith(
+                        textStyle: (context, states, value) {
+                          return value.copyWith(fontWeight: FontWeight.w600);
+                        },
                       ),
-                    ),
+                      leading: const Icon(SpotubeIcons.lightningOutlined),
+                      child: Text(qualityLabel),
+                    )
                   ],
                 ),
               ),

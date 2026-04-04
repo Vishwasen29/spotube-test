@@ -7,7 +7,6 @@ import 'package:dio/dio.dart' as dio_lib;
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart';
 import 'package:shelf/shelf.dart';
 import 'package:spotube/models/metadata/metadata.dart';
@@ -353,26 +352,6 @@ class ServerPlaybackRoutes {
     await audioPlayer.skipToNext();
     return Response.ok("Next track");
   }
-
-
-  /// @get('/playback/toggle-shuffle')
-  Future<Response> toggleShuffle(Request request) async {
-    final next = !audioPlayer.isShuffled;
-    await audioPlayer.setShuffle(next);
-    return Response.ok("Shuffle: ${next ? "on" : "off"}");
-  }
-
-  /// @get('/playback/cycle-loop')
-  Future<Response> cycleLoop(Request request) async {
-    final next = switch (audioPlayer.loopMode) {
-      PlaylistMode.none => PlaylistMode.loop,
-      PlaylistMode.loop => PlaylistMode.single,
-      PlaylistMode.single => PlaylistMode.none,
-    };
-    await audioPlayer.setLoopMode(next);
-    return Response.ok("Loop mode: ${next.name}");
-  }
-
 }
 
 final serverPlaybackRoutesProvider =
