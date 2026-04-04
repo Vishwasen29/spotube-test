@@ -7,12 +7,11 @@ on:
   pull_request:
     branches: [ main, master ]
 
-env:
-  FLUTTER_VERSION: 3.35.2
-
 jobs:
   build-android-debug:
     runs-on: ubuntu-22.04
+    env:
+      FLUTTER_VERSION: 3.35.2
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,32 +24,20 @@ jobs:
           cache: gradle
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v2.18.0
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
+          channel: master
           cache: true
+          git-source: https://github.com/flutter/flutter.git
 
       - name: Install Linux dependencies used by Android build
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y gettext-base clang cmake ninja-build pkg-config libgtk-3-dev make python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse
-
-      - name: Create dummy .env
-        run: |
-          envsubst < .env.example > .env
-        env:
-          ENABLE_UPDATE_CHECK: 1
-          LASTFM_API_KEY: xxx
-          LASTFM_API_SECRET: xxx
-          RELEASE_CHANNEL: stable
-          HIDE_DONATIONS: 0
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev make python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse
 
       - name: Get Flutter packages
         run: flutter pub get
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build stable debug APK
         run: flutter build apk --debug --flavor stable

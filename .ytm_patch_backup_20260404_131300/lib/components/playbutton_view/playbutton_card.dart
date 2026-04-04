@@ -171,7 +171,8 @@ class PlaybuttonCard extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          unescapeHtml.isEmpty ? '\n' : unescapeHtml,
+          unescapeHtml.isEmpty ? '
+' : unescapeHtml,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: theme.typography.xSmall.copyWith(
