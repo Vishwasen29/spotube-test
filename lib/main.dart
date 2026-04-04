@@ -217,31 +217,45 @@ class Spotube extends HookConsumerWidget {
       },
       scaling: const AdaptiveScaling(1),
       theme: ThemeData(
-        radius: .5,
+        radius: 1,
         iconTheme: const IconThemeProperties(),
-        colorScheme:
-            colorSchemeMap[accentMaterialColor.name]?.call(ThemeMode.light) ??
-                LegacyColorSchemes.lightSlate(),
-        surfaceOpacity: .8,
-        surfaceBlur: 10,
+        colorScheme: LegacyColorSchemes.red(ThemeMode.light),
+        surfaceOpacity: .94,
+        surfaceBlur: 14,
       ),
       darkTheme: ThemeData(
-        radius: .5,
+        radius: 1,
         iconTheme: const IconThemeProperties(),
-        colorScheme:
-            colorSchemeMap[accentMaterialColor.name]?.call(ThemeMode.dark) ??
-                LegacyColorSchemes.darkSlate(),
-        surfaceOpacity: .8,
-        surfaceBlur: 10,
+        colorScheme: LegacyColorSchemes.red(ThemeMode.dark),
+        surfaceOpacity: .98,
+        surfaceBlur: 18,
       ),
       materialTheme: material.ThemeData(
+        useMaterial3: true,
         brightness: switch (themeMode) {
           ThemeMode.system => MediaQuery.platformBrightnessOf(context),
           ThemeMode.light => Brightness.light,
           ThemeMode.dark => Brightness.dark,
         },
+        scaffoldBackgroundColor: switch (themeMode) {
+          ThemeMode.light => const material.Color(0xFFF8F8F8),
+          ThemeMode.dark => const material.Color(0xFF0F0F0F),
+          ThemeMode.system => MediaQuery.platformBrightnessOf(context) ==
+                  Brightness.dark
+              ? const material.Color(0xFF0F0F0F)
+              : const material.Color(0xFFF8F8F8),
+        },
+        canvasColor: switch (themeMode) {
+          ThemeMode.light => const material.Color(0xFFF8F8F8),
+          ThemeMode.dark => const material.Color(0xFF0F0F0F),
+          ThemeMode.system => MediaQuery.platformBrightnessOf(context) ==
+                  Brightness.dark
+              ? const material.Color(0xFF0F0F0F)
+              : const material.Color(0xFFF8F8F8),
+        },
         splashFactory: material.NoSplash.splashFactory,
         appBarTheme: const material.AppBarTheme(
+          backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
           scrolledUnderElevation: 0,
           shadowColor: Colors.transparent,

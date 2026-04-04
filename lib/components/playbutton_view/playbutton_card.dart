@@ -37,25 +37,33 @@ class PlaybuttonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unescapeHtml = description?.unescapeHtml().cleanHtml() ?? "";
+    final unescapeHtml = description?.unescapeHtml().cleanHtml() ?? '';
     final scale = context.theme.scaling;
+    final theme = Theme.of(context);
 
     return SizedBox(
-      width: 150 * scale,
+      width: 158 * scale,
       child: CardImage(
         image: Stack(
           children: [
             if (imageUrl != null)
               Container(
-                width: 150 * scale,
-                height: 150 * scale,
+                width: 158 * scale,
+                height: 158 * scale,
                 decoration: BoxDecoration(
-                  borderRadius: context.theme.borderRadiusMd,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(70),
+                      blurRadius: 18,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                   image: DecorationImage(
                     image: UniversalImage.imageProvider(
                       imageUrl!,
-                      height: 200 * scale,
-                      width: 200 * scale,
+                      height: 220 * scale,
+                      width: 220 * scale,
                     ),
                     fit: BoxFit.cover,
                   ),
@@ -63,35 +71,48 @@ class PlaybuttonCard extends StatelessWidget {
               )
             else
               SizedBox(
-                width: 150 * scale,
-                height: 150 * scale,
+                width: 158 * scale,
+                height: 158 * scale,
                 child: ClipRRect(
-                  borderRadius: context.theme.borderRadiusMd,
+                  borderRadius: BorderRadius.circular(18),
                   child: image!,
                 ),
               ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withAlpha(30),
+                      Colors.black.withAlpha(125),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             StatedWidget.builder(
               builder: (context, states) {
+                final showControls =
+                    states.contains(WidgetState.hovered) ||
+                        kIsMobile ||
+                        isPlaying ||
+                        isLoading;
                 return Positioned(
-                  right: 8,
-                  bottom: 8,
+                  right: 10,
+                  bottom: 10,
                   child: Column(
                     children: [
                       AnimatedScale(
                         curve: Curves.easeOutBack,
                         duration: const Duration(milliseconds: 300),
-                        scale: (states.contains(WidgetState.hovered) ||
-                                    kIsMobile) &&
-                                !isLoading
-                            ? 1
-                            : 0.7,
+                        scale: showControls && !isLoading ? 1 : 0.7,
                         child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 300),
-                          opacity: (states.contains(WidgetState.hovered) ||
-                                      kIsMobile) &&
-                                  !isLoading
-                              ? 1
-                              : 0,
+                          opacity: showControls && !isLoading ? 1 : 0,
                           child: IconButton.secondary(
                             icon: const Icon(SpotubeIcons.queueAdd),
                             onPressed: onAddToQueuePressed,
@@ -99,25 +120,15 @@ class PlaybuttonCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Gap(5),
+                      const Gap(6),
                       AnimatedScale(
                         curve: Curves.easeOutBack,
-                        duration: const Duration(milliseconds: 150),
-                        scale: states.contains(WidgetState.hovered) ||
-                                kIsMobile ||
-                                isPlaying ||
-                                isLoading
-                            ? 1
-                            : 0.7,
+                        duration: const Duration(milliseconds: 180),
+                        scale: showControls ? 1 : 0.78,
                         child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 150),
-                          opacity: states.contains(WidgetState.hovered) ||
-                                  kIsMobile ||
-                                  isPlaying ||
-                                  isLoading
-                              ? 1
-                              : 0,
-                          child: IconButton.secondary(
+                          duration: const Duration(milliseconds: 180),
+                          opacity: showControls ? 1 : 0,
+                          child: IconButton.primary(
                             icon: switch ((isLoading, isPlaying)) {
                               (true, _) => const CircularProgressIndicator(
                                   size: 15,
@@ -138,8 +149,8 @@ class PlaybuttonCard extends StatelessWidget {
             ),
             if (isOwner)
               const Positioned(
-                right: 5,
-                top: 5,
+                right: 8,
+                top: 8,
                 child: SecondaryBadge(
                   style: ButtonStyle.secondaryIcon(
                     shape: ButtonShape.circle,
@@ -156,12 +167,17 @@ class PlaybuttonCard extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
         subtitle: Text(
-          unescapeHtml.isEmpty ? "\n" : unescapeHtml,
+          unescapeHtml.isEmpty ? '
+' : unescapeHtml,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
+          style: theme.typography.xSmall.copyWith(
+            color: theme.colorScheme.mutedForeground,
+          ),
         ),
         onPressed: onTap,
       ),

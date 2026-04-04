@@ -24,6 +24,7 @@ class SpotubeNavigationBar extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final mediaQuery = MediaQuery.of(context);
+    final theme = Theme.of(context);
 
     final downloadCount = ref
         .watch(downloadManagerProvider)
@@ -56,33 +57,74 @@ class SpotubeNavigationBar extends HookConsumerWidget {
     }
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      height: panelHeight,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            const Divider(),
-            NavigationBar(
-              index: selectedIndex,
-              surfaceBlur: context.theme.surfaceBlur,
-              surfaceOpacity: context.theme.surfaceOpacity,
-              children: [
-                for (final tile in navbarTileList)
-                  NavigationButton(
-                    style: navbarTileList[selectedIndex] == tile
-                        ? const ButtonStyle.fixed(density: ButtonDensity.icon)
-                        : const ButtonStyle.muted(density: ButtonDensity.icon),
-                    child: Badge(
-                      isLabelVisible: tile.id == "library" && downloadCount > 0,
-                      label: Text(downloadCount.toString()),
-                      child: Icon(tile.icon),
-                    ),
-                    onPressed: () {
-                      context.navigateTo(tile.route);
-                    },
-                  )
-              ],
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      height: min(panelHeight + 30, 86),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xE61A1A1A),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withAlpha(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(90),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
             ),
+          ],
+        ),
+        child: NavigationBar(
+          index: selectedIndex,
+          surfaceBlur: context.theme.surfaceBlur,
+          surfaceOpacity: 1,
+          children: [
+            for (final tile in navbarTileList)
+              NavigationButton(
+                style: navbarTileList[selectedIndex] == tile
+                    ? const ButtonStyle.fixed(
+                        density: ButtonDensity.compact,
+                        size: ButtonSize.small,
+                      )
+                    : const ButtonStyle.muted(
+                        density: ButtonDensity.compact,
+                        size: ButtonSize.small,
+                      ),
+                child: Builder(
+                  builder: (context) {
+                    final selected = navbarTileList[selectedIndex] == tile;
+                    final color = selected
+                        ? const Color(0xFFFF4E45)
+                        : theme.colorScheme.mutedForeground;
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Badge(
+                          isLabelVisible:
+                              tile.id == "library" && downloadCount > 0,
+                          label: Text(downloadCount.toString()),
+                          child: Icon(tile.icon, color: color),
+                        ),
+                        const Gap(2),
+                        Text(
+                          tile.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.typography.xSmall.copyWith(
+                            color: color,
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                onPressed: () {
+                  context.navigateTo(tile.route);
+                },
+              )
           ],
         ),
       ),

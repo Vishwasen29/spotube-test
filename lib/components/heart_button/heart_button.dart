@@ -34,9 +34,9 @@ class HeartButton extends HookConsumerWidget {
     if (authenticated.asData?.value != true) return const SizedBox.shrink();
 
     return Tooltip(
-      tooltip: TooltipContainer(child: Text(tooltip ?? "")).call,
+      tooltip: TooltipContainer(child: Text(tooltip ?? '')).call,
       child: IconButton(
-        variance: variance,
+        variance: isLiked ? ButtonVariance.secondary : variance,
         size: size,
         enabled: onPressed != null,
         icon: AnimatedSwitcher(
@@ -55,7 +55,7 @@ class HeartButton extends HookConsumerWidget {
                     ? Icons.favorite_rounded
                     : Icons.favorite_outline_rounded),
             key: ValueKey(isLiked),
-            color: color ?? (isLiked ? color ?? Colors.red : null),
+            color: color ?? (isLiked ? const Color(0xFFFF4E45) : null),
           ),
         ),
         onPressed: onPressed,

@@ -20,6 +20,7 @@ class RootAppPage extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final backgroundColor = Theme.of(context).colorScheme.background;
     final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
 
     ref.listen(glanceProvider, (_, __) {});
 
@@ -30,33 +31,50 @@ class RootAppPage extends HookConsumerWidget {
     useEffect(() {
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
-          statusBarColor: backgroundColor, // status bar color
+          statusBarColor: isDark ? const Color(0xFF0F0F0F) : backgroundColor,
           statusBarIconBrightness: brightness == Brightness.dark
               ? Brightness.light
               : Brightness.dark,
         ),
       );
       return null;
-    }, [backgroundColor, brightness]);
+    }, [backgroundColor, brightness, isDark]);
 
     final scaffold = MediaQuery.removeViewInsets(
       context: context,
       removeBottom: true,
-      child: SafeArea(
-        top: false,
-        child: Scaffold(
-          footers: const [
-            BottomPlayer(),
-            SpotubeNavigationBar(),
-          ],
-          floatingFooter: true,
-          child: Sidebar(
-            child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                padding: MediaQuery.paddingOf(context)
-                    .copyWith(bottom: 100 * context.theme.scaling),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF181818),
+                    Color(0xFF111111),
+                    Color(0xFF0B0B0B),
+                  ],
+                )
+              : null,
+          color: isDark ? null : backgroundColor,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            footers: const [
+              BottomPlayer(),
+              SpotubeNavigationBar(),
+            ],
+            floatingFooter: true,
+            child: Sidebar(
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  padding: MediaQuery.paddingOf(context)
+                      .copyWith(bottom: 108 * context.theme.scaling),
+                ),
+                child: const AutoRouter(),
               ),
-              child: const AutoRouter(),
             ),
           ),
         ),

@@ -88,183 +88,204 @@ class PlayerView extends HookConsumerWidget {
       onPopInvoked: (didPop) async {
         await panelController.close();
       },
-      child: SurfaceCard(
-        borderWidth: 0,
-        surfaceOpacity: 0.9,
-        padding: EdgeInsets.zero,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          headers: [
-            SafeArea(
-              bottom: false,
-              child: TitleBar(
-                surfaceOpacity: 0,
-                surfaceBlur: 0,
-                leading: [
-                  IconButton.ghost(
-                    size: const ButtonSize(1.2),
-                    icon: const Icon(SpotubeIcons.angleDown),
-                    onPressed: panelController.close,
-                  )
-                ],
-                trailing: [
-                  if (!isLocalTrack)
-                    Tooltip(
-                      tooltip: TooltipContainer(
-                        child: Text(context.l10n.details),
-                      ).call,
-                      child: IconButton.ghost(
-                        size: const ButtonSize(1.2),
-                        icon: const Icon(SpotubeIcons.info),
-                        onPressed: currentActiveTrackSource == null
-                            ? null
-                            : () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return TrackDetailsDialog(
-                                        track: currentActiveTrack
-                                            as SpotubeFullTrackObject,
-                                      );
-                                    });
-                              },
-                      ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF181818),
+              Color(0xFF101010),
+              Color(0xFF090909),
+            ],
+          ),
+        ),
+        child: SurfaceCard(
+          borderWidth: 0,
+          borderRadius: BorderRadius.zero,
+          surfaceOpacity: 0.16,
+          padding: EdgeInsets.zero,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            headers: [
+              SafeArea(
+                bottom: false,
+                child: TitleBar(
+                  surfaceOpacity: 0,
+                  surfaceBlur: 0,
+                  leading: [
+                    IconButton.ghost(
+                      size: const ButtonSize(1.2),
+                      icon: const Icon(SpotubeIcons.angleDown),
+                      onPressed: panelController.close,
                     )
-                ],
-              ),
-            ),
-          ],
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    constraints:
-                        const BoxConstraints(maxHeight: 300, maxWidth: 300),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(100),
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          offset: Offset.zero,
+                  ],
+                  trailing: [
+                    if (!isLocalTrack)
+                      Tooltip(
+                        tooltip: TooltipContainer(
+                          child: Text(context.l10n.details),
+                        ).call,
+                        child: IconButton.ghost(
+                          size: const ButtonSize(1.2),
+                          icon: const Icon(SpotubeIcons.info),
+                          onPressed: currentActiveTrackSource == null
+                              ? null
+                              : () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return TrackDetailsDialog(
+                                          track: currentActiveTrack
+                                              as SpotubeFullTrackObject,
+                                        );
+                                      });
+                                },
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: UniversalImage(
-                        path: albumArt,
-                        placeholder: Assets.images.albumPlaceholder.path,
-                        fit: BoxFit.cover,
+                      )
+                  ],
+                ),
+              ),
+            ],
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      constraints:
+                          const BoxConstraints(maxHeight: 320, maxWidth: 320),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(120),
+                            spreadRadius: 2,
+                            blurRadius: 28,
+                            offset: const Offset(0, 18),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: UniversalImage(
+                          path: albumArt,
+                          placeholder: Assets.images.albumPlaceholder.path,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 60),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AutoSizeText(
-                          currentActiveTrack?.name ?? context.l10n.not_playing,
-                          style: const TextStyle(fontSize: 22),
-                          maxFontSize: 22,
-                          maxLines: 1,
-                          textAlign: TextAlign.start,
-                        ),
-                        if (isLocalTrack)
-                          Text(
-                            currentActiveTrack.artists.asString(),
-                            style: theme.typography.normal
-                                .copyWith(fontWeight: FontWeight.bold),
-                          )
-                        else
-                          ArtistLink(
-                            artists: currentActiveTrack?.artists ?? [],
-                            textStyle: theme.typography.normal
-                                .copyWith(fontWeight: FontWeight.bold),
-                            onRouteChange: (route) {
-                              panelController.close();
-                              context.router.navigateNamed(route);
-                            },
-                            onOverflowArtistClick: () => context.navigateTo(
-                              TrackRoute(
-                                trackId: currentActiveTrack!.id,
+                    const SizedBox(height: 28),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AutoSizeText(
+                            currentActiveTrack?.name ?? context.l10n.not_playing,
+                            style: theme.typography.h3.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                            maxFontSize: 24,
+                            maxLines: 2,
+                            textAlign: TextAlign.start,
+                          ),
+                          const SizedBox(height: 6),
+                          if (isLocalTrack)
+                            Text(
+                              currentActiveTrack.artists.asString(),
+                              style: theme.typography.normal.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.mutedForeground,
+                              ),
+                            )
+                          else
+                            ArtistLink(
+                              artists: currentActiveTrack?.artists ?? [],
+                              textStyle: theme.typography.normal.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.mutedForeground,
+                              ),
+                              onRouteChange: (route) {
+                                panelController.close();
+                                context.router.navigateNamed(route);
+                              },
+                              onOverflowArtistClick: () => context.navigateTo(
+                                TrackRoute(
+                                  trackId: currentActiveTrack!.id,
+                                ),
                               ),
                             ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const PlayerControls(),
+                    const SizedBox(height: 20),
+                    const PlayerActions(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      showQueue: false,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlineButton(
+                            leading: const Icon(SpotubeIcons.queue),
+                            child: Text(context.l10n.queue),
+                            onPressed: () {
+                              context.pushRoute(const PlayerQueueRoute());
+                            },
                           ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlineButton(
+                            leading: const Icon(SpotubeIcons.music),
+                            child: Text(context.l10n.lyrics),
+                            onPressed: () {
+                              context.pushRoute(const PlayerLyricsRoute());
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  const PlayerControls(),
-                  const SizedBox(height: 25),
-                  const PlayerActions(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    showQueue: false,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlineButton(
-                          leading: const Icon(SpotubeIcons.queue),
-                          child: Text(context.l10n.queue),
-                          onPressed: () {
-                            context.pushRoute(const PlayerQueueRoute());
+                    const SizedBox(height: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Consumer(builder: (context, ref, _) {
+                        final volume = ref.watch(volumeProvider);
+                        return VolumeSlider(
+                          fullWidth: true,
+                          value: volume,
+                          onChanged: (value) {
+                            ref.read(volumeProvider.notifier).setVolume(value);
                           },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlineButton(
-                          leading: const Icon(SpotubeIcons.music),
-                          child: Text(context.l10n.lyrics),
-                          onPressed: () {
-                            context.pushRoute(const PlayerLyricsRoute());
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
-                  const SizedBox(height: 25),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Consumer(builder: (context, ref, _) {
-                      final volume = ref.watch(volumeProvider);
-                      return VolumeSlider(
-                        fullWidth: true,
-                        value: volume,
-                        onChanged: (value) {
-                          ref.read(volumeProvider.notifier).setVolume(value);
-                        },
-                      );
-                    }),
-                  ),
-                  const Gap(25),
-                  OutlineBadge(
-                    style: const ButtonStyle.outline(
-                      size: ButtonSize.normal,
-                      density: ButtonDensity.dense,
-                      shape: ButtonShape.rectangle,
-                    ).copyWith(
-                      textStyle: (context, states, value) {
-                        return value.copyWith(fontWeight: FontWeight.w500);
-                      },
+                        );
+                      }),
                     ),
-                    leading: const Icon(SpotubeIcons.lightningOutlined),
-                    child: Text(qualityLabel),
-                  )
-                ],
+                    const Gap(18),
+                    OutlineBadge(
+                      style: const ButtonStyle.outline(
+                        size: ButtonSize.normal,
+                        density: ButtonDensity.dense,
+                        shape: ButtonShape.rectangle,
+                      ).copyWith(
+                        textStyle: (context, states, value) {
+                          return value.copyWith(fontWeight: FontWeight.w600);
+                        },
+                      ),
+                      leading: const Icon(SpotubeIcons.lightningOutlined),
+                      child: Text(qualityLabel),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

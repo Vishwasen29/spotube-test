@@ -44,89 +44,94 @@ class BottomPlayer extends HookConsumerWidget {
       [playlist.activeTrack?.album.images],
     );
 
-    // returning an empty non spacious Container as the overlay will take
-    // place in the global overlay stack aka [_entries]
     if (layoutMode == LayoutMode.compact ||
         ((mediaQuery.mdAndDown) && layoutMode == LayoutMode.adaptive)) {
       return PlayerOverlay(albumArt: albumArt);
     }
 
-    return SurfaceCard(
-      borderRadius: BorderRadius.zero,
-      surfaceBlur: context.theme.surfaceBlur,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: PlayerTrackDetails(track: playlist.activeTrack),
-          ),
-          // controls
-          const Flexible(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: PlayerControls(),
-            ),
-          ),
-          // add to saved tracks
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PlayerActions(
-                extraActions: [
-                  Tooltip(
-                    tooltip:
-                        TooltipContainer(child: Text(context.l10n.mini_player))
-                            .call,
-                    child: IconButton(
-                      variance: ButtonVariance.ghost,
-                      icon: const Icon(SpotubeIcons.miniPlayer),
-                      onPressed: () async {
-                        if (!kIsDesktop) return;
+    if (playlist.activeTrack == null) {
+      return const SizedBox.shrink();
+    }
 
-                        final prevSize = await windowManager.getSize();
-                        await windowManager.setMinimumSize(
-                          const Size(300, 300),
-                        );
-                        await windowManager.setAlwaysOnTop(true);
-                        if (!kIsLinux) {
-                          await windowManager.setHasShadow(false);
-                        }
-                        await windowManager.setAlignment(Alignment.topRight);
-                        await windowManager.setSize(const Size(400, 500));
-                        await Future.delayed(
-                          const Duration(milliseconds: 100),
-                          () async {
-                            if (context.mounted) {
-                              context.navigateTo(
-                                MiniLyricsRoute(prevSize: prevSize),
-                              );
-                            }
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: SurfaceCard(
+        borderRadius: BorderRadius.circular(26),
+        surfaceOpacity: 0.96,
+        surfaceBlur: context.theme.surfaceBlur,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: PlayerTrackDetails(track: playlist.activeTrack),
+            ),
+            const Flexible(
+              flex: 3,
+              child: Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: PlayerControls(),
               ),
-              Container(
-                height: 40,
-                constraints: const BoxConstraints(maxWidth: 250),
-                padding: const EdgeInsets.only(right: 10),
-                child: Consumer(builder: (context, ref, _) {
-                  final volume = ref.watch(volumeProvider);
-                  return VolumeSlider(
-                    fullWidth: true,
-                    value: volume,
-                    onChanged: (value) {
-                      ref.read(volumeProvider.notifier).setVolume(value);
-                    },
-                  );
-                }),
-              )
-            ],
-          ),
-        ],
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PlayerActions(
+                  extraActions: [
+                    Tooltip(
+                      tooltip:
+                          TooltipContainer(child: Text(context.l10n.mini_player))
+                              .call,
+                      child: IconButton(
+                        variance: ButtonVariance.ghost,
+                        icon: const Icon(SpotubeIcons.miniPlayer),
+                        onPressed: () async {
+                          if (!kIsDesktop) return;
+
+                          final prevSize = await windowManager.getSize();
+                          await windowManager.setMinimumSize(
+                            const Size(300, 300),
+                          );
+                          await windowManager.setAlwaysOnTop(true);
+                          if (!kIsLinux) {
+                            await windowManager.setHasShadow(false);
+                          }
+                          await windowManager.setAlignment(Alignment.topRight);
+                          await windowManager.setSize(const Size(400, 500));
+                          await Future.delayed(
+                            const Duration(milliseconds: 100),
+                            () async {
+                              if (context.mounted) {
+                                context.navigateTo(
+                                  MiniLyricsRoute(prevSize: prevSize),
+                                );
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  height: 40,
+                  constraints: const BoxConstraints(maxWidth: 250),
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Consumer(builder: (context, ref, _) {
+                    final volume = ref.watch(volumeProvider);
+                    return VolumeSlider(
+                      fullWidth: true,
+                      value: volume,
+                      onChanged: (value) {
+                        ref.read(volumeProvider.notifier).setVolume(value);
+                      },
+                    );
+                  }),
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

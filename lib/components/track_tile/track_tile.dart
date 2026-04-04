@@ -126,7 +126,25 @@ class TrackTile extends HookConsumerWidget {
                     : ButtonVariance.ghost)
                 .copyWith(
               padding: (context, states, value) =>
-                  const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              decoration: (context, states, value) {
+                final decoration = (ButtonVariance.ghost.decoration(context, states)
+                        as BoxDecoration)
+                    .copyWith(
+                  borderRadius: BorderRadius.circular(16),
+                  color: isSelected
+                      ? theme.colorScheme.primary.withAlpha(26)
+                      : isHovering
+                          ? Colors.white.withAlpha(8)
+                          : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary.withAlpha(80)
+                        : Colors.white.withAlpha(12),
+                  ),
+                );
+                return decoration;
+              },
             ),
             leading: Row(
               mainAxisSize: MainAxisSize.min,
@@ -162,10 +180,10 @@ class TrackTile extends HookConsumerWidget {
                 Stack(
                   children: [
                     Container(
-                      height: 40,
-                      width: 40,
+                      height: 48,
+                      width: 48,
                       decoration: BoxDecoration(
-                        borderRadius: theme.borderRadiusMd,
+                        borderRadius: BorderRadius.circular(12),
                         image: DecorationImage(
                           fit: BoxFit.cover,
                           image: imageProvider,
@@ -176,9 +194,9 @@ class TrackTile extends HookConsumerWidget {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         decoration: BoxDecoration(
-                          borderRadius: theme.borderRadiusMd,
-                          color: isHovering
-                              ? Colors.black.withAlpha(102)
+                          borderRadius: BorderRadius.circular(12),
+                          color: isHovering || isSelected
+                              ? Colors.black.withAlpha(110)
                               : Colors.transparent,
                         ),
                       ),
@@ -208,7 +226,7 @@ class TrackTile extends HookConsumerWidget {
                                     ),
                                   (_, _, true, _, _) => Icon(
                                       SpotubeIcons.pause,
-                                      color: theme.colorScheme.primary,
+                                      color: const Color(0xFFFF4E45),
                                     ),
                                   (_, _, _, true, _) => const Icon(
                                       SpotubeIcons.play,

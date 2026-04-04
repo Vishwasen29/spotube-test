@@ -25,24 +25,34 @@ class ExpandableSearchField extends StatelessWidget {
       child: AnimatedSize(
         duration: const Duration(milliseconds: 200),
         child: SizedBox(
-          height: isFiltering ? 50 : 0,
+          height: isFiltering ? 60 : 0,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: CallbackShortcuts(
-              bindings: {
-                LogicalKeySet(LogicalKeyboardKey.escape): () {
-                  onChangeFiltering(false);
-                  searchController.clear();
-                  searchFocus.unfocus();
-                }
-              },
-              child: TextField(
-                focusNode: searchFocus,
-                controller: searchController,
-                placeholder: Text(context.l10n.search_tracks),
-                features: const [
-                  InputFeature.leading(Icon(SpotubeIcons.search))
-                ],
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C1C1C),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Colors.white.withAlpha(18)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: CallbackShortcuts(
+                  bindings: {
+                    LogicalKeySet(LogicalKeyboardKey.escape): () {
+                      onChangeFiltering(false);
+                      searchController.clear();
+                      searchFocus.unfocus();
+                    }
+                  },
+                  child: TextField(
+                    focusNode: searchFocus,
+                    controller: searchController,
+                    placeholder: Text(context.l10n.search_tracks),
+                    features: const [
+                      InputFeature.leading(Icon(SpotubeIcons.search))
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -70,7 +80,7 @@ class ExpandableSearchButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: icon,
-      variance: isFiltering ? ButtonVariance.secondary : ButtonVariance.outline,
+      variance: isFiltering ? ButtonVariance.secondary : ButtonVariance.ghost,
       onPressed: () {
         if (isFiltering) {
           searchFocus.requestFocus();

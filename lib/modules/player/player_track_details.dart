@@ -22,20 +22,21 @@ class PlayerTrackDetails extends HookConsumerWidget {
     final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
     final playback = ref.watch(audioPlayerProvider);
+    final activeTrack = track ?? playback.activeTrack;
 
     return Row(
       children: [
-        if (playback.activeTrack != null)
+        if (activeTrack != null)
           Container(
             padding: const EdgeInsets.all(6),
             constraints: const BoxConstraints(
-              maxWidth: 80,
-              maxHeight: 80,
+              maxWidth: 84,
+              maxHeight: 84,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(12),
               child: UniversalImage(
-                path: (track?.album.images)
+                path: (activeTrack.album.images)
                     .asUrlString(placeholder: ImagePlaceholder.albumArt),
                 placeholder: Assets.images.albumPlaceholder.path,
               ),
@@ -48,16 +49,19 @@ class PlayerTrackDetails extends HookConsumerWidget {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  playback.activeTrack?.name ?? "",
+                  activeTrack?.name ?? '',
                   overflow: TextOverflow.ellipsis,
                   style: theme.typography.normal.copyWith(
                     color: color,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 Text(
-                  playback.activeTrack?.artists.asString() ?? "",
+                  activeTrack?.artists.asString() ?? '',
                   overflow: TextOverflow.ellipsis,
-                  style: theme.typography.small.copyWith(color: color),
+                  style: theme.typography.small.copyWith(
+                    color: color ?? theme.colorScheme.mutedForeground,
+                  ),
                 )
               ],
             ),
@@ -66,21 +70,24 @@ class PlayerTrackDetails extends HookConsumerWidget {
           Flexible(
             flex: 1,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 LinkText(
-                  playback.activeTrack?.name ?? "",
-                  TrackRoute(trackId: playback.activeTrack?.id ?? ""),
+                  activeTrack?.name ?? '',
+                  TrackRoute(trackId: activeTrack?.id ?? ''),
                   push: true,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: FontWeight.bold, color: color),
                 ),
                 ArtistLink(
-                  artists: playback.activeTrack?.artists ?? [],
+                  artists: activeTrack?.artists ?? [],
                   onRouteChange: (route) {
                     context.router.navigateNamed(route);
                   },
-                  onOverflowArtistClick: () =>
-                      context.navigateTo(TrackRoute(trackId: track!.id)),
+                  onOverflowArtistClick: () {
+                    if (activeTrack == null) return;
+                    context.navigateTo(TrackRoute(trackId: activeTrack.id));
+                  },
                 )
               ],
             ),

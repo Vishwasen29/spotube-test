@@ -38,15 +38,24 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
       duration: const Duration(milliseconds: 250),
       child: canShow && shouldShow.value
           ? Padding(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 5),
               child: SurfaceCard(
                 surfaceBlur: theme.surfaceBlur,
-                surfaceOpacity: theme.surfaceOpacity,
+                surfaceOpacity: 0.98,
                 padding: EdgeInsets.zero,
-                borderRadius: theme.borderRadiusLg,
+                borderRadius: BorderRadius.circular(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Container(
+                      width: 42,
+                      height: 4,
+                      margin: const EdgeInsets.only(top: 8, bottom: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(60),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
                     Expanded(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -76,7 +85,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                               ),
                               Consumer(
                                 builder: (context, ref, _) {
-                                  return IconButton.ghost(
+                                  return IconButton.primary(
                                     icon: isFetchingActiveTrack
                                         ? const SizedBox(
                                             height: 20,

@@ -1,15 +1,14 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-
-import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/collections/intents.dart';
+import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/extensions/duration.dart';
+import 'package:spotube/models/database/database.dart';
 import 'package:spotube/modules/player/use_progress.dart';
 import 'package:spotube/provider/audio_player/audio_player.dart';
 import 'package:spotube/provider/audio_player/querying_track_info.dart';
@@ -63,8 +62,8 @@ class PlayerControls extends HookConsumerWidget {
         focusNode: focusNode,
         shortcuts: shortcuts,
         actions: actions,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
           child: Column(
             children: [
               if (!compact)
@@ -117,9 +116,7 @@ class PlayerControls extends HookConsumerWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -138,6 +135,7 @@ class PlayerControls extends HookConsumerWidget {
                     );
                   },
                 ),
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -193,24 +191,36 @@ class PlayerControls extends HookConsumerWidget {
                             : context.l10n.resume_playback,
                       ),
                     ).call,
-                    child: IconButton.primary(
-                      size: buttonSize,
-                      shape: ButtonShape.circle,
-                      icon: isFetchingActiveTrack
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(),
-                            )
-                          : Icon(
-                              playing ? SpotubeIcons.pause : SpotubeIcons.play,
-                            ),
-                      onPressed: isFetchingActiveTrack
-                          ? null
-                          : Actions.handler<PlayPauseIntent>(
-                              context,
-                              PlayPauseIntent(ref),
-                            ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withAlpha(75),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: IconButton.primary(
+                        size: const ButtonSize(1.75),
+                        shape: ButtonShape.circle,
+                        icon: isFetchingActiveTrack
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(),
+                              )
+                            : Icon(
+                                playing ? SpotubeIcons.pause : SpotubeIcons.play,
+                              ),
+                        onPressed: isFetchingActiveTrack
+                            ? null
+                            : Actions.handler<PlayPauseIntent>(
+                                context,
+                                PlayPauseIntent(ref),
+                              ),
+                      ),
                     ),
                   ),
                   Tooltip(
@@ -235,7 +245,7 @@ class PlayerControls extends HookConsumerWidget {
                               ? context.l10n.loop_track
                               : loopMode == PlaylistMode.loop
                                   ? context.l10n.repeat_playlist
-                                  : "",
+                                  : '',
                         ),
                       ).call,
                       child: IconButton(
@@ -268,7 +278,7 @@ class PlayerControls extends HookConsumerWidget {
                   }),
                 ],
               ),
-              const SizedBox(height: 5)
+              const SizedBox(height: 5),
             ],
           ),
         ),
