@@ -15,6 +15,7 @@ class MobileAudioService extends BaseAudioHandler {
   AudioSession? session;
   final AudioPlayerNotifier audioPlayerNotifier;
 
+  // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
   AudioPlayerState get playlist => audioPlayerNotifier.state;
 
   MobileAudioService(this.audioPlayerNotifier) {
@@ -58,7 +59,6 @@ class MobileAudioService extends BaseAudioHandler {
         audioPlayer.pause();
       });
     });
-
     audioPlayer.playerStateStream.listen((state) async {
       if (state == AudioPlaybackState.playing) {
         await session?.setActive(true);
@@ -66,23 +66,10 @@ class MobileAudioService extends BaseAudioHandler {
       playbackState.add(await _transformEvent());
     });
 
-    audioPlayer.positionStream.listen((_) async {
+    audioPlayer.positionStream.listen((pos) async {
       playbackState.add(await _transformEvent());
     });
-
-    audioPlayer.bufferedPositionStream.listen((_) async {
-      playbackState.add(await _transformEvent());
-    });
-
-    audioPlayer.currentIndexChangedStream.listen((_) async {
-      playbackState.add(await _transformEvent());
-    });
-
-    audioPlayer.shuffledStream.listen((_) async {
-      playbackState.add(await _transformEvent());
-    });
-
-    audioPlayer.loopModeStream.listen((_) async {
+    audioPlayer.bufferedPositionStream.listen((pos) async {
       playbackState.add(await _transformEvent());
     });
   }
@@ -104,19 +91,20 @@ class MobileAudioService extends BaseAudioHandler {
   @override
   Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
     await super.setShuffleMode(shuffleMode);
-    await audioPlayer.setShuffle(shuffleMode == AudioServiceShuffleMode.all);
-    playbackState.add(await _transformEvent());
+
+    audioPlayer.setShuffle(shuffleMode == AudioServiceShuffleMode.all);
   }
 
   @override
   Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
-    await super.setRepeatMode(repeatMode);
-    await audioPlayer.setLoopMode(switch (repeatMode) {
-      AudioServiceRepeatMode.all || AudioServiceRepeatMode.group => PlaylistMode.loop,
+    super.setRepeatMode(repeatMode);
+    audioPlayer.setLoopMode(switch (repeatMode) {
+      AudioServiceRepeatMode.all ||
+      AudioServiceRepeatMode.group =>
+        PlaylistMode.loop,
       AudioServiceRepeatMode.one => PlaylistMode.single,
       _ => PlaylistMode.none,
     });
-    playbackState.add(await _transformEvent());
   }
 
   @override
@@ -128,14 +116,12 @@ class MobileAudioService extends BaseAudioHandler {
   Future<void> skipToNext() async {
     await audioPlayer.skipToNext();
     await super.skipToNext();
-    playbackState.add(await _transformEvent());
   }
 
   @override
   Future<void> skipToPrevious() async {
     await audioPlayer.skipToPrevious();
     await super.skipToPrevious();
-    playbackState.add(await _transformEvent());
   }
 
   @override
@@ -153,20 +139,14 @@ class MobileAudioService extends BaseAudioHandler {
           MediaControl.skipToNext,
           MediaControl.stop,
         ],
-        systemActions: const {
+        systemActions: {
           MediaAction.seek,
-          MediaAction.seekForward,
-          MediaAction.seekBackward,
-          MediaAction.setShuffleMode,
-          MediaAction.setRepeatMode,
         },
         androidCompactActionIndices: const [0, 1, 2],
         playing: audioPlayer.isPlaying,
         updatePosition: audioPlayer.position,
         bufferedPosition: audioPlayer.bufferedPosition,
-        speed: audioPlayer.isPlaying ? 1.0 : 0.0,
-        queueIndex: playlist.currentIndex < 0 ? 0 : playlist.currentIndex,
-        shuffleMode: audioPlayer.isShuffled
+        shuffleMode: audioPlayer.isShuffled == true
             ? AudioServiceShuffleMode.all
             : AudioServiceShuffleMode.none,
         repeatMode: switch (audioPlayer.loopMode) {

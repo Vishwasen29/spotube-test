@@ -12,9 +12,8 @@ import 'package:spotube/utils/platform.dart';
 class AudioServices with WidgetsBindingObserver {
   final MobileAudioService? mobile;
   final WindowsAudioService? smtc;
-  final AudioPlayerNotifier playback;
 
-  AudioServices(this.mobile, this.smtc, this.playback) {
+  AudioServices(this.mobile, this.smtc) {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -26,7 +25,10 @@ class AudioServices with WidgetsBindingObserver {
         ? await AudioService.init(
             builder: () => MobileAudioService(playback),
             config: AudioServiceConfig(
-              androidNotificationChannelId: switch ((kIsLinux, Env.releaseChannel)) {
+              androidNotificationChannelId: switch ((
+                kIsLinux,
+                Env.releaseChannel
+              )) {
                 (true, _) => "spotube",
                 (_, ReleaseChannel.stable) => "oss.krtirtho.spotube",
                 (_, ReleaseChannel.nightly) => "oss.krtirtho.spotube.nightly",
@@ -40,34 +42,22 @@ class AudioServices with WidgetsBindingObserver {
         : null;
     final smtc = kIsWindows ? WindowsAudioService(ref, playback) : null;
 
-    return AudioServices(mobile, smtc, playback);
+    return AudioServices(mobile, smtc);
   }
 
   Future<void> addTrack(SpotubeTrackObject track) async {
     await smtc?.addTrack(track);
-
-    final state = playback.state;
-    final total = state.tracks.length;
-    final index = state.currentIndex >= 0 ? state.currentIndex + 1 : 0;
-    final counter = (total > 0 && index > 0) ? " • $index/$total" : "";
-
-    mobile?.addItem(
-      MediaItem(
-        id: track.id,
-        album: track.album.name,
-        title: track.name,
-        artist: "${track.artists.asString()}$counter",
-        duration: Duration(milliseconds: track.durationMs),
-        artUri: (track.album.images).asUri(
-          placeholder: ImagePlaceholder.albumArt,
-        ),
-        playable: true,
-        extras: {
-          "queueLength": total,
-          "queueIndex": index,
-        },
+    mobile?.addItem(MediaItem(
+      id: track.id,
+      album: track.album.name,
+      title: track.name,
+      artist: track.artists.asString(),
+      duration: Duration(milliseconds: track.durationMs),
+      artUri: (track.album.images).asUri(
+        placeholder: ImagePlaceholder.albumArt,
       ),
-    );
+      playable: true,
+    ));
   }
 
   void activateSession() {
