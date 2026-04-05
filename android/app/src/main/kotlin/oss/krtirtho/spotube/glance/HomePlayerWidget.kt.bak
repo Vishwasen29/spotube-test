@@ -173,7 +173,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                     .fillMaxSize()
                     .cornerRadius(24.dp)
                     .background(color = surface)
-                    .clickable(onClick = actionStartActivity<MainActivity>(context))
+                    .clickable(onClick = actionStartActivity<MainActivity>())
             ) {
                 Box(
                     modifier = GlanceModifier
