@@ -95,9 +95,7 @@ class PlayerControls extends HookConsumerWidget {
                             child: Text(context.l10n.slide_to_seek),
                           ).call,
                           child: SizedBox(
-                            width: ((mediaQuery.width - 32) < (mediaQuery.xlAndUp ? 600.0 : 500.0)
-                                ? (mediaQuery.width - 32)
-                                : (mediaQuery.xlAndUp ? 600.0 : 500.0)),
+                            width: mediaQuery.xlAndUp ? 600 : 500,
                             child: Slider(
                               hintValue: SliderValue.single(bufferProgress),
                               value:

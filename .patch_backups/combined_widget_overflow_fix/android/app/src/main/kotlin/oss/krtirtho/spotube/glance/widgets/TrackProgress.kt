@@ -53,7 +53,7 @@ private fun effectivePositionSeconds(prefs: SharedPreferences): Int {
 fun TrackProgress(
   prefs: SharedPreferences,
   accent: Color = Color(0xFFE8E39A),
-  inactive: Color = Color(0xFF3A3A2A),
+  inactive: Color = Color(0xFF4A4A35),
   compact: Boolean = false,
 ) {
   val position = effectivePositionSeconds(prefs).seconds
@@ -62,13 +62,10 @@ fun TrackProgress(
       position.inWholeSeconds.toFloat() / max(duration.inWholeSeconds.toFloat(), 1.0f)
 
   val barHeights = if (compact) {
-    listOf(7, 11, 9, 13, 10, 14, 8, 12, 9, 13)
+    listOf(6, 10, 8, 12, 9, 13, 7, 11, 8, 12, 9, 10)
   } else {
-    listOf(8, 14, 10, 18, 12, 20, 9, 16, 11, 18, 8, 14, 10, 18)
+    listOf(8, 14, 10, 18, 12, 20, 9, 16, 11, 18, 8, 14, 10, 18, 12, 20)
   }
-
-  val barWidth = if (compact) 9.dp else 10.dp
-  val gapWidth = if (compact) 4.dp else 4.dp
 
   val computedActive = (progress * barHeights.size).toInt()
   val activeCount =
@@ -83,11 +80,11 @@ fun TrackProgress(
         Box(
           modifier = GlanceModifier
             .height(barHeights[i].dp)
-            .width(barWidth)
+            .width(if (compact) 8.dp else 10.dp)
             .background(color = if (i < activeCount) accent else inactive)
         ) {}
         if (i < barHeights.lastIndex) {
-          Spacer(modifier = GlanceModifier.width(gapWidth))
+          Spacer(modifier = GlanceModifier.width(if (compact) 3.dp else 4.dp))
         }
       }
     }

@@ -60,9 +60,9 @@ private val serverAddressKey = ActionParameters.Key<String>("serverAddress")
 
 class Breakpoints {
     companion object {
-        val SMALL_SQUARE = DpSize(140.dp, 110.dp)
-        val HORIZONTAL_RECTANGLE = DpSize(240.dp, 130.dp)
-        val BIG_SQUARE = DpSize(320.dp, 180.dp)
+        val SMALL_SQUARE = DpSize(110.dp, 110.dp)
+        val HORIZONTAL_RECTANGLE = DpSize(220.dp, 130.dp)
+        val BIG_SQUARE = DpSize(300.dp, 180.dp)
     }
 }
 
@@ -108,6 +108,7 @@ private fun computeAccent(track: Track?): Color {
 private fun cp(color: Color): ColorProvider = ColorProvider(color)
 
 class HomePlayerWidget : GlanceAppWidget() {
+
     override val sizeMode = SizeMode.Responsive(
         setOf(
             Breakpoints.SMALL_SQUARE,
@@ -126,7 +127,7 @@ class HomePlayerWidget : GlanceAppWidget() {
     }
 
     @OptIn(ExperimentalGlancePreviewApi::class)
-    @Preview(widthDp = 240, heightDp = 130)
+    @Preview(widthDp = 220, heightDp = 130)
     @Composable
     private fun GlanceContent(currentState: HomeWidgetGlanceState) {
         val context = LocalContext.current
@@ -161,11 +162,10 @@ class HomePlayerWidget : GlanceAppWidget() {
         val surfaceVariant = GlanceTheme.colors.surfaceVariant.getColor(context)
         val primaryContainer = GlanceTheme.colors.primaryContainer.getColor(context)
 
-        val isTiny = size.width < 180.dp && size.height < 120.dp
+        val isTiny = size.width < 170.dp || size.height < 120.dp
         val isMedium = !isTiny && (size.width < 280.dp || size.height < 150.dp)
         val isWide = size.width > size.height
-        val showCounterChip = size.width >= 220.dp
-        val showSecondaryControls = !isTiny && (size.width >= 235.dp || (size.width >= 210.dp && size.height >= 140.dp))
+        val showSecondaryControls = !isTiny && (size.width >= 210.dp || size.height >= 135.dp)
 
         GlanceTheme {
             Box(
@@ -189,8 +189,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                     TrackDetailsView(
                         activeTrack = activeTrack,
                         compact = isTiny,
-                        counterText = counterText,
-                        showCounterChip = showCounterChip,
+                        counterText = if (isTiny) null else counterText,
                         accent = cp(accent),
                     )
 

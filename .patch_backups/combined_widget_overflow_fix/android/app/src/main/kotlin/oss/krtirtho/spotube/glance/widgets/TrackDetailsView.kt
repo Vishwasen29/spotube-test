@@ -32,7 +32,6 @@ fun TrackDetailsView(
     activeTrack: Track?,
     compact: Boolean = false,
     counterText: String? = null,
-    showCounterChip: Boolean = true,
     accent: ColorProvider = ColorProvider(Color(0xFFFF5A36)),
 ) {
     val context = LocalContext.current
@@ -93,22 +92,19 @@ fun TrackDetailsView(
             }
         }
 
-        if (showCounterChip && !counterText.isNullOrBlank()) {
-            Spacer(modifier = GlanceModifier.size(if (compact) 4.dp else 6.dp))
+        if (!compact && !counterText.isNullOrBlank()) {
+            Spacer(modifier = GlanceModifier.size(6.dp))
             Row(
                 modifier = GlanceModifier
                     .cornerRadius(999.dp)
                     .background(colorProvider = accent)
-                    .padding(
-                        horizontal = if (compact) 8.dp else 10.dp,
-                        vertical = if (compact) 3.dp else 4.dp,
-                    ),
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.Vertical.CenterVertically,
             ) {
                 Text(
                     text = counterText,
                     style = TextStyle(
-                        fontSize = if (compact) 10.sp else 11.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = ColorProvider(Color(0xFF111111)),
                     ),
