@@ -17,6 +17,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -30,7 +31,7 @@ import oss.krtirtho.spotube.glance.models.Track
 @Composable
 fun TrackDetailsView(
     activeTrack: Track?,
-    compact: Boolean = false,
+    compact: Boolean = true,
     counterText: String? = null,
     showCounterChip: Boolean = true,
     accent: ColorProvider = ColorProvider(Color(0xFFFF5A36)),
@@ -46,73 +47,74 @@ fun TrackDetailsView(
     val imgLocalPath: String? = activeTrack?.album?.images?.firstOrNull()?.path
     val titleText: String = activeTrack?.name ?: "Nothing playing"
 
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-        ) {
-            Image(
-                provider =
-                    if (imgLocalPath.isNullOrBlank())
-                        ImageProvider(
-                            BitmapFactory.decodeResource(
-                                context.resources,
-                                android.R.drawable.ic_media_play
-                            )
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Vertical.CenterVertically,
+    ) {
+        Image(
+            provider =
+                if (imgLocalPath.isNullOrBlank())
+                    ImageProvider(
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            android.R.drawable.ic_media_play
                         )
-                    else
-                        ImageProvider(BitmapFactory.decodeFile(imgLocalPath!!)),
-                contentDescription = "Album Art",
-                modifier = GlanceModifier
-                    .cornerRadius(if (compact) 12.dp else 16.dp)
-                    .size(if (compact) 48.dp else 72.dp),
-                contentScale = ContentScale.Crop,
+                    )
+                else
+                    ImageProvider(BitmapFactory.decodeFile(imgLocalPath)),
+            contentDescription = "Album Art",
+            modifier = GlanceModifier
+                .cornerRadius(18.dp)
+                .size(if (compact) 68.dp else 80.dp),
+            contentScale = ContentScale.Crop,
+        )
+
+        Spacer(modifier = GlanceModifier.width(12.dp))
+
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            Text(
+                text = titleText,
+                style = TextStyle(
+                    fontSize = if (compact) 16.sp else 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GlanceTheme.colors.onBackground,
+                ),
+                maxLines = 1,
             )
-
-            Spacer(modifier = GlanceModifier.width(if (compact) 8.dp else 12.dp))
-
-            Column(modifier = GlanceModifier.fillMaxWidth()) {
-                Text(
-                    text = titleText,
-                    style = TextStyle(
-                        fontSize = if (compact) 13.sp else 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = GlanceTheme.colors.onBackground,
-                    ),
-                    maxLines = 1,
-                )
-                Spacer(modifier = GlanceModifier.size(3.dp))
-                Text(
-                    text = artistText,
-                    style = TextStyle(
-                        fontSize = if (compact) 11.sp else 13.sp,
-                        color = GlanceTheme.colors.onBackground,
-                    ),
-                    maxLines = 1,
-                )
-            }
-        }
-
-        if (showCounterChip && !counterText.isNullOrBlank()) {
-            Spacer(modifier = GlanceModifier.size(if (compact) 4.dp else 6.dp))
+            Spacer(modifier = GlanceModifier.size(4.dp))
             Row(
-                modifier = GlanceModifier
-                    .cornerRadius(999.dp)
-                    .background(colorProvider = accent)
-                    .padding(
-                        horizontal = if (compact) 8.dp else 10.dp,
-                        vertical = if (compact) 3.dp else 4.dp,
-                    ),
+                modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Vertical.CenterVertically,
             ) {
                 Text(
-                    text = counterText,
+                    text = artistText,
                     style = TextStyle(
-                        fontSize = if (compact) 10.sp else 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ColorProvider(Color(0xFF111111)),
+                        fontSize = if (compact) 12.sp else 13.sp,
+                        color = GlanceTheme.colors.onBackground,
                     ),
+                    maxLines = 1,
+                    modifier = GlanceModifier.defaultWeight(),
                 )
+
+                if (showCounterChip && !counterText.isNullOrBlank()) {
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    Row(
+                        modifier = GlanceModifier
+                            .cornerRadius(999.dp)
+                            .background(colorProvider = accent)
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.Vertical.CenterVertically,
+                    ) {
+                        Text(
+                            text = counterText,
+                            style = TextStyle(
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorProvider(Color(0xFF111111)),
+                            ),
+                        )
+                    }
+                }
             }
         }
     }
