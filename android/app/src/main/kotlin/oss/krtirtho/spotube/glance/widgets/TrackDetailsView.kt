@@ -17,7 +17,6 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -71,7 +70,10 @@ fun TrackDetailsView(
 
         Spacer(modifier = GlanceModifier.width(12.dp))
 
-        Column(modifier = GlanceModifier.defaultWeight()) {
+        Column(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
             Text(
                 text = titleText,
                 style = TextStyle(
@@ -82,21 +84,20 @@ fun TrackDetailsView(
                 maxLines = 1,
             )
             Spacer(modifier = GlanceModifier.size(4.dp))
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Vertical.CenterVertically,
-            ) {
-                Text(
-                    text = artistText,
-                    style = TextStyle(
-                        fontSize = if (compact) 12.sp else 13.sp,
-                        color = GlanceTheme.colors.onBackground,
-                    ),
-                    maxLines = 1,
-                    modifier = GlanceModifier.defaultWeight(),
-                )
 
-                if (showCounterChip && !counterText.isNullOrBlank()) {
+            if (showCounterChip && !counterText.isNullOrBlank()) {
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Vertical.CenterVertically,
+                ) {
+                    Text(
+                        text = artistText,
+                        style = TextStyle(
+                            fontSize = if (compact) 12.sp else 13.sp,
+                            color = GlanceTheme.colors.onBackground,
+                        ),
+                        maxLines = 1,
+                    )
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Row(
                         modifier = GlanceModifier
@@ -115,6 +116,15 @@ fun TrackDetailsView(
                         )
                     }
                 }
+            } else {
+                Text(
+                    text = artistText,
+                    style = TextStyle(
+                        fontSize = if (compact) 12.sp else 13.sp,
+                        color = GlanceTheme.colors.onBackground,
+                    ),
+                    maxLines = 1,
+                )
             }
         }
     }
