@@ -162,9 +162,10 @@ class HomePlayerWidget : GlanceAppWidget() {
         val surfaceVariant = GlanceTheme.colors.surfaceVariant.getColor(context)
         val primaryContainer = GlanceTheme.colors.primaryContainer.getColor(context)
 
-        val isTiny = size.width < 180.dp || size.height < 125.dp
+        val isTiny = size.width < 170.dp || size.height < 120.dp
+        val isMedium = !isTiny && (size.width < 280.dp || size.height < 150.dp)
         val isWide = size.width > size.height
-        val showAdvanced = size.width >= 260.dp && size.height >= 140.dp
+        val showSecondaryControls = !isTiny && (size.width >= 210.dp || size.height >= 135.dp)
 
         GlanceTheme {
             Box(
@@ -172,7 +173,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                     .fillMaxSize()
                     .cornerRadius(24.dp)
                     .background(color = surface)
-                    .clickable { actionStartActivity<MainActivity>(context) }
+                    .clickable(onClick = actionStartActivity<MainActivity>())
             ) {
                 Box(
                     modifier = GlanceModifier
@@ -192,7 +193,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                         accent = cp(accent),
                     )
 
-                    Spacer(modifier = GlanceModifier.height(if (isTiny) 6.dp else 10.dp))
+                    Spacer(modifier = GlanceModifier.height(if (isTiny) 6.dp else 8.dp))
 
                     TrackProgress(
                         prefs = prefs,
@@ -201,181 +202,170 @@ class HomePlayerWidget : GlanceAppWidget() {
                         compact = isTiny,
                     )
 
-                    Spacer(modifier = GlanceModifier.height(if (isTiny) 6.dp else 10.dp))
+                    Spacer(modifier = GlanceModifier.height(if (isTiny) 6.dp else 8.dp))
 
                     if (isTiny) {
-                        Row(
-                            modifier = GlanceModifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-                            verticalAlignment = Alignment.Vertical.CenterVertically
-                        ) {
-                            CircleIconButton(
-                                imageProvider = ImageProvider(previousIcon),
-                                contentDescription = "Previous",
-                                onClick = actionRunCallback<PreviousAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(36.dp),
-                                backgroundColor = cp(surfaceVariant),
-                            )
-                            Spacer(modifier = GlanceModifier.width(6.dp))
-                            CircleIconButton(
-                                imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
-                                contentDescription = "Play/Pause",
-                                onClick = actionRunCallback<PlayPauseAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(42.dp),
-                                backgroundColor = cp(accent),
-                                contentColor = cp(Color(0xFF111111)),
-                            )
-                            Spacer(modifier = GlanceModifier.width(6.dp))
-                            CircleIconButton(
-                                imageProvider = ImageProvider(nextIcon),
-                                contentDescription = "Next",
-                                onClick = actionRunCallback<NextAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(36.dp),
-                                backgroundColor = cp(surfaceVariant),
-                            )
-                        }
-                    } else if (isWide) {
+                        MainControlsRow(
+                            previousIcon = previousIcon,
+                            playIcon = playIcon,
+                            pauseIcon = pauseIcon,
+                            nextIcon = nextIcon,
+                            isPlaying = isPlaying,
+                            playbackServerAddress = playbackServerAddress,
+                            surfaceVariant = surfaceVariant,
+                            accent = accent,
+                            small = true,
+                        )
+                    } else if (isWide && !isMedium && showSecondaryControls) {
                         Row(
                             modifier = GlanceModifier.fillMaxWidth(),
                             verticalAlignment = Alignment.Vertical.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
-                                CircleIconButton(
-                                    imageProvider = ImageProvider(previousIcon),
-                                    contentDescription = "Previous",
-                                    onClick = actionRunCallback<PreviousAction>(
-                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    modifier = GlanceModifier.size(40.dp),
-                                    backgroundColor = cp(surfaceVariant),
-                                )
-                                Spacer(modifier = GlanceModifier.width(6.dp))
-                                CircleIconButton(
-                                    imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
-                                    contentDescription = "Play/Pause",
-                                    onClick = actionRunCallback<PlayPauseAction>(
-                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    modifier = GlanceModifier.size(46.dp),
-                                    backgroundColor = cp(accent),
-                                    contentColor = cp(Color(0xFF111111)),
-                                )
-                                Spacer(modifier = GlanceModifier.width(6.dp))
-                                CircleIconButton(
-                                    imageProvider = ImageProvider(nextIcon),
-                                    contentDescription = "Next",
-                                    onClick = actionRunCallback<NextAction>(
-                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    modifier = GlanceModifier.size(40.dp),
-                                    backgroundColor = cp(surfaceVariant),
-                                )
-                            }
+                            MainControlsRow(
+                                previousIcon = previousIcon,
+                                playIcon = playIcon,
+                                pauseIcon = pauseIcon,
+                                nextIcon = nextIcon,
+                                isPlaying = isPlaying,
+                                playbackServerAddress = playbackServerAddress,
+                                surfaceVariant = surfaceVariant,
+                                accent = accent,
+                                small = false,
+                            )
 
-                            if (showAdvanced) {
-                                Spacer(modifier = GlanceModifier.width(8.dp))
-                                Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
-                                    CircleIconButton(
-                                        imageProvider = ImageProvider(shuffleIcon),
-                                        contentDescription = "Shuffle",
-                                        onClick = actionRunCallback<ShuffleAction>(
-                                            parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                        ),
-                                        modifier = GlanceModifier.size(36.dp),
-                                        backgroundColor = cp(if (isShuffled) accent else surfaceVariant),
-                                        contentColor = cp(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
-                                    )
-                                    Spacer(modifier = GlanceModifier.width(6.dp))
-                                    CircleIconButton(
-                                        imageProvider = ImageProvider(repeatIcon),
-                                        contentDescription = "Repeat",
-                                        onClick = actionRunCallback<RepeatAction>(
-                                            parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                        ),
-                                        modifier = GlanceModifier.size(36.dp),
-                                        backgroundColor = cp(if (loopMode != "none") accent else surfaceVariant),
-                                        contentColor = cp(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
-                                    )
-                                }
-                            }
+                            Spacer(modifier = GlanceModifier.width(8.dp))
+
+                            SecondaryControlsRow(
+                                shuffleIcon = shuffleIcon,
+                                repeatIcon = repeatIcon,
+                                isShuffled = isShuffled,
+                                loopMode = loopMode,
+                                playbackServerAddress = playbackServerAddress,
+                                surfaceVariant = surfaceVariant,
+                                accent = accent,
+                            )
                         }
                     } else {
-                        Row(
-                            modifier = GlanceModifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-                            verticalAlignment = Alignment.Vertical.CenterVertically
-                        ) {
-                            CircleIconButton(
-                                imageProvider = ImageProvider(previousIcon),
-                                contentDescription = "Previous",
-                                onClick = actionRunCallback<PreviousAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(38.dp),
-                                backgroundColor = cp(surfaceVariant),
-                            )
-                            Spacer(modifier = GlanceModifier.width(6.dp))
-                            CircleIconButton(
-                                imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
-                                contentDescription = "Play/Pause",
-                                onClick = actionRunCallback<PlayPauseAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(44.dp),
-                                backgroundColor = cp(accent),
-                                contentColor = cp(Color(0xFF111111)),
-                            )
-                            Spacer(modifier = GlanceModifier.width(6.dp))
-                            CircleIconButton(
-                                imageProvider = ImageProvider(nextIcon),
-                                contentDescription = "Next",
-                                onClick = actionRunCallback<NextAction>(
-                                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                ),
-                                modifier = GlanceModifier.size(38.dp),
-                                backgroundColor = cp(surfaceVariant),
-                            )
-                        }
+                        MainControlsRow(
+                            previousIcon = previousIcon,
+                            playIcon = playIcon,
+                            pauseIcon = pauseIcon,
+                            nextIcon = nextIcon,
+                            isPlaying = isPlaying,
+                            playbackServerAddress = playbackServerAddress,
+                            surfaceVariant = surfaceVariant,
+                            accent = accent,
+                            small = false,
+                        )
 
-                        if (showAdvanced) {
+                        if (showSecondaryControls) {
                             Spacer(modifier = GlanceModifier.height(8.dp))
-                            Row(
-                                modifier = GlanceModifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-                                verticalAlignment = Alignment.Vertical.CenterVertically
-                            ) {
-                                CircleIconButton(
-                                    imageProvider = ImageProvider(shuffleIcon),
-                                    contentDescription = "Shuffle",
-                                    onClick = actionRunCallback<ShuffleAction>(
-                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    modifier = GlanceModifier.size(34.dp),
-                                    backgroundColor = cp(if (isShuffled) accent else surfaceVariant),
-                                    contentColor = cp(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
-                                )
-                                Spacer(modifier = GlanceModifier.width(6.dp))
-                                CircleIconButton(
-                                    imageProvider = ImageProvider(repeatIcon),
-                                    contentDescription = "Repeat",
-                                    onClick = actionRunCallback<RepeatAction>(
-                                        parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
-                                    ),
-                                    modifier = GlanceModifier.size(34.dp),
-                                    backgroundColor = cp(if (loopMode != "none") accent else surfaceVariant),
-                                    contentColor = cp(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
-                                )
-                            }
+                            SecondaryControlsRow(
+                                shuffleIcon = shuffleIcon,
+                                repeatIcon = repeatIcon,
+                                isShuffled = isShuffled,
+                                loopMode = loopMode,
+                                playbackServerAddress = playbackServerAddress,
+                                surfaceVariant = surfaceVariant,
+                                accent = accent,
+                            )
                         }
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun MainControlsRow(
+        previousIcon: Icon,
+        playIcon: Icon,
+        pauseIcon: Icon,
+        nextIcon: Icon,
+        isPlaying: Boolean,
+        playbackServerAddress: String,
+        surfaceVariant: Color,
+        accent: Color,
+        small: Boolean,
+    ) {
+        val sideSize = if (small) 34.dp else 38.dp
+        val centerSize = if (small) 40.dp else 44.dp
+        val gap = if (small) 6.dp else 8.dp
+
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            verticalAlignment = Alignment.Vertical.CenterVertically
+        ) {
+            CircleIconButton(
+                imageProvider = ImageProvider(previousIcon),
+                contentDescription = "Previous",
+                onClick = actionRunCallback<PreviousAction>(
+                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                ),
+                modifier = GlanceModifier.size(sideSize),
+                backgroundColor = cp(surfaceVariant),
+            )
+            Spacer(modifier = GlanceModifier.width(gap))
+            CircleIconButton(
+                imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
+                contentDescription = "Play/Pause",
+                onClick = actionRunCallback<PlayPauseAction>(
+                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                ),
+                modifier = GlanceModifier.size(centerSize),
+                backgroundColor = cp(accent),
+                contentColor = cp(Color(0xFF111111)),
+            )
+            Spacer(modifier = GlanceModifier.width(gap))
+            CircleIconButton(
+                imageProvider = ImageProvider(nextIcon),
+                contentDescription = "Next",
+                onClick = actionRunCallback<NextAction>(
+                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                ),
+                modifier = GlanceModifier.size(sideSize),
+                backgroundColor = cp(surfaceVariant),
+            )
+        }
+    }
+
+    @Composable
+    private fun SecondaryControlsRow(
+        shuffleIcon: Icon,
+        repeatIcon: Icon,
+        isShuffled: Boolean,
+        loopMode: String,
+        playbackServerAddress: String,
+        surfaceVariant: Color,
+        accent: Color,
+    ) {
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            verticalAlignment = Alignment.Vertical.CenterVertically
+        ) {
+            CircleIconButton(
+                imageProvider = ImageProvider(shuffleIcon),
+                contentDescription = "Shuffle",
+                onClick = actionRunCallback<ShuffleAction>(
+                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                ),
+                modifier = GlanceModifier.size(34.dp),
+                backgroundColor = cp(if (isShuffled) accent else surfaceVariant),
+                contentColor = cp(if (isShuffled) Color(0xFF111111) else Color(0xFFFFFFFF)),
+            )
+            Spacer(modifier = GlanceModifier.width(8.dp))
+            CircleIconButton(
+                imageProvider = ImageProvider(repeatIcon),
+                contentDescription = "Repeat",
+                onClick = actionRunCallback<RepeatAction>(
+                    parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
+                ),
+                modifier = GlanceModifier.size(34.dp),
+                backgroundColor = cp(if (loopMode != "none") accent else surfaceVariant),
+                contentColor = cp(if (loopMode != "none") Color(0xFF111111) else Color(0xFFFFFFFF)),
+            )
         }
     }
 }

@@ -44,23 +44,21 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                 surfaceOpacity: 0.98,
                 padding: EdgeInsets.zero,
                 borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 4,
-                        margin: const EdgeInsets.only(top: 2, bottom: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(60),
-                          borderRadius: BorderRadius.circular(99),
-                        ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 4,
+                      margin: const EdgeInsets.only(top: 8, bottom: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(60),
+                        borderRadius: BorderRadius.circular(99),
                       ),
-                      Row(
+                    ),
+                    Expanded(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: GestureDetector(
@@ -70,7 +68,6 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                               child: Container(
                                 width: double.infinity,
                                 color: Colors.transparent,
-                                padding: const EdgeInsets.only(left: 4, right: 6),
                                 child: PlayerTrackDetails(
                                   track: playlist.activeTrack,
                                   color: theme.colorScheme.foreground,
@@ -79,7 +76,6 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                             ),
                           ),
                           Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton.ghost(
                                 icon: const Icon(SpotubeIcons.skipBack),
@@ -114,13 +110,13 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                     ? null
                                     : audioPlayer.skipToNext,
                               ),
-                              const Gap(2),
+                              const Gap(5),
                             ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             )

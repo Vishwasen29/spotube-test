@@ -60,7 +60,9 @@ fun TrackDetailsView(
                             )
                         )
                     else
-                        ImageProvider(BitmapFactory.decodeFile(imgLocalPath!!)),
+                        ImageProvider(
+                            BitmapFactory.decodeFile(imgLocalPath!!)
+                        ),
                 contentDescription = "Album Art",
                 modifier = GlanceModifier
                     .cornerRadius(if (compact) 12.dp else 16.dp)
