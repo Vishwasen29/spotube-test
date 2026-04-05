@@ -16,11 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
+import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
@@ -28,8 +28,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.background
-import androidx.glance.appwidget.components.CircleIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -56,9 +54,9 @@ import androidx.glance.unit.ColorProvider
 import com.google.gson.Gson
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.actionStartActivity
+import kotlin.math.max
 import oss.krtirtho.spotube.MainActivity
 import oss.krtirtho.spotube.glance.models.Track
-import kotlin.math.max
 
 private val gson = Gson()
 private val serverAddressKey = ActionParameters.Key<String>("serverAddress")
@@ -175,9 +173,9 @@ class HomePlayerWidget : GlanceAppWidget() {
         val nextIcon = Icon.createWithResource(context, android.R.drawable.ic_media_next)
         val repeatIcon = Icon.createWithResource(context, android.R.drawable.ic_popup_sync)
 
-        val showExtra = size.width >= 320.dp
-        val showCounter = size.width >= 290.dp
-        val compact = size.height <= 100.dp
+        val showExtra = size.width >= 315.dp
+        val showCounter = size.width >= 295.dp
+        val compact = size.height <= 102.dp
 
         Box(
             modifier = GlanceModifier
@@ -194,20 +192,15 @@ class HomePlayerWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Vertical.CenterVertically
                 ) {
-                    AlbumArt(
-                        track = activeTrack,
-                        compact = compact,
-                    )
+                    AlbumArt(track = activeTrack, compact = compact)
 
                     Spacer(modifier = GlanceModifier.width(12.dp))
 
-                    Column(
-                        modifier = GlanceModifier.fillMaxWidth()
-                    ) {
+                    Column(modifier = GlanceModifier.fillMaxWidth()) {
                         Text(
                             text = activeTrack?.name ?: "Nothing playing",
                             style = TextStyle(
-                                fontSize = if (compact) 16.sp else 18.sp,
+                                fontSize = if (compact) 15.sp else 17.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = cp(Color(0xFFF7F2DE)),
                             ),
@@ -224,7 +217,7 @@ class HomePlayerWidget : GlanceAppWidget() {
                                 text = activeTrack?.artists?.mapNotNull { it.name }?.joinToString(", ")
                                     ?.ifBlank { "Unknown artist" } ?: "Unknown artist",
                                 style = TextStyle(
-                                    fontSize = if (compact) 12.sp else 13.sp,
+                                    fontSize = if (compact) 11.sp else 12.sp,
                                     color = cp(Color(0xFFF1EAD7)),
                                 ),
                                 maxLines = 1,
@@ -255,10 +248,7 @@ class HomePlayerWidget : GlanceAppWidget() {
 
                 Spacer(modifier = GlanceModifier.height(if (compact) 6.dp else 8.dp))
 
-                CompactProgress(
-                    prefs = prefs,
-                    compact = compact,
-                )
+                CompactProgress(prefs = prefs, compact = compact)
 
                 Spacer(modifier = GlanceModifier.height(if (compact) 8.dp else 10.dp))
 
@@ -268,63 +258,63 @@ class HomePlayerWidget : GlanceAppWidget() {
                     verticalAlignment = Alignment.Vertical.CenterVertically
                 ) {
                     if (showExtra) {
-                        CircleIconButton(
-                            imageProvider = ImageProvider(shuffleIcon),
-                            contentDescription = "Shuffle",
-                            onClick = actionRunCallback<ShuffleAction>(
+                        ActionButton(
+                            icon = shuffleIcon,
+                            action = actionRunCallback<ShuffleAction>(
                                 parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                             ),
-                            modifier = GlanceModifier.size(30.dp),
-                            backgroundColor = cp(if (isShuffled) Color(0xFFF0E3C1) else Color(0x2AFFFFFF)),
-                            contentColor = cp(if (isShuffled) Color(0xFF241A14) else Color(0xFFF6F2EC)),
+                            size = 28.dp,
+                            iconSize = 18.dp,
+                            background = if (isShuffled) Color(0xFFF0E3C1) else Color(0x2AFFFFFF),
+                            foreground = if (isShuffled) Color(0xFF241A14) else Color(0xFFF6F2EC),
                         )
-                        Spacer(modifier = GlanceModifier.width(10.dp))
+                        Spacer(modifier = GlanceModifier.width(8.dp))
                     }
 
-                    CircleIconButton(
-                        imageProvider = ImageProvider(previousIcon),
-                        contentDescription = "Previous",
-                        onClick = actionRunCallback<PreviousAction>(
+                    ActionButton(
+                        icon = previousIcon,
+                        action = actionRunCallback<PreviousAction>(
                             parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                         ),
-                        modifier = GlanceModifier.size(34.dp),
-                        backgroundColor = cp(Color(0x2AFFFFFF)),
-                        contentColor = cp(Color(0xFFF6F2EC)),
+                        size = 32.dp,
+                        iconSize = 22.dp,
+                        background = Color(0x2AFFFFFF),
+                        foreground = Color(0xFFF6F2EC),
                     )
-                    Spacer(modifier = GlanceModifier.width(10.dp))
-                    CircleIconButton(
-                        imageProvider = if (isPlaying) ImageProvider(pauseIcon) else ImageProvider(playIcon),
-                        contentDescription = "Play/Pause",
-                        onClick = actionRunCallback<PlayPauseAction>(
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    ActionButton(
+                        icon = if (isPlaying) pauseIcon else playIcon,
+                        action = actionRunCallback<PlayPauseAction>(
                             parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                         ),
-                        modifier = GlanceModifier.size(40.dp),
-                        backgroundColor = cp(Color(0xFFF6F2EC)),
-                        contentColor = cp(Color(0xFF2D221A)),
+                        size = 40.dp,
+                        iconSize = 26.dp,
+                        background = Color(0xFFF6F2EC),
+                        foreground = Color(0xFF2D221A),
                     )
-                    Spacer(modifier = GlanceModifier.width(10.dp))
-                    CircleIconButton(
-                        imageProvider = ImageProvider(nextIcon),
-                        contentDescription = "Next",
-                        onClick = actionRunCallback<NextAction>(
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    ActionButton(
+                        icon = nextIcon,
+                        action = actionRunCallback<NextAction>(
                             parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                         ),
-                        modifier = GlanceModifier.size(34.dp),
-                        backgroundColor = cp(Color(0x2AFFFFFF)),
-                        contentColor = cp(Color(0xFFF6F2EC)),
+                        size = 32.dp,
+                        iconSize = 22.dp,
+                        background = Color(0x2AFFFFFF),
+                        foreground = Color(0xFFF6F2EC),
                     )
 
                     if (showExtra) {
-                        Spacer(modifier = GlanceModifier.width(10.dp))
-                        CircleIconButton(
-                            imageProvider = ImageProvider(repeatIcon),
-                            contentDescription = "Repeat",
-                            onClick = actionRunCallback<RepeatAction>(
+                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        ActionButton(
+                            icon = repeatIcon,
+                            action = actionRunCallback<RepeatAction>(
                                 parameters = actionParametersOf(serverAddressKey to playbackServerAddress)
                             ),
-                            modifier = GlanceModifier.size(30.dp),
-                            backgroundColor = cp(if (loopMode != "none") Color(0xFFF0E3C1) else Color(0x2AFFFFFF)),
-                            contentColor = cp(if (loopMode != "none") Color(0xFF241A14) else Color(0xFFF6F2EC)),
+                            size = 28.dp,
+                            iconSize = 18.dp,
+                            background = if (loopMode != "none") Color(0xFFF0E3C1) else Color(0x2AFFFFFF),
+                            foreground = if (loopMode != "none") Color(0xFF241A14) else Color(0xFFF6F2EC),
                         )
                     }
                 }
@@ -365,9 +355,9 @@ class HomePlayerWidget : GlanceAppWidget() {
         val position = effectivePositionSeconds(prefs)
         val progress = position.toFloat() / max(duration.toFloat(), 1f)
 
-        val segments = if (compact) 12 else 14
+        val segments = if (compact) 10 else 12
         val activeCount = if (position > 0) max(1, (progress * segments).toInt()) else 0
-        val barWidth = if (compact) 14.dp else 13.dp
+        val barWidth = if (compact) 18.dp else 16.dp
         val gap = 4.dp
 
         Row(
@@ -385,6 +375,31 @@ class HomePlayerWidget : GlanceAppWidget() {
                     Spacer(modifier = GlanceModifier.width(gap))
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun ActionButton(
+        icon: Icon,
+        action: Action,
+        size: androidx.compose.ui.unit.Dp,
+        iconSize: androidx.compose.ui.unit.Dp,
+        background: Color,
+        foreground: Color,
+    ) {
+        Box(
+            modifier = GlanceModifier
+                .size(size)
+                .cornerRadius(999.dp)
+                .background(color = background)
+                .clickable(onClick = action),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                provider = ImageProvider(icon),
+                contentDescription = null,
+                modifier = GlanceModifier.size(iconSize),
+            )
         }
     }
 }
